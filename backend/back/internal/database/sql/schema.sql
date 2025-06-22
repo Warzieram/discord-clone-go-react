@@ -1,4 +1,6 @@
-CREATE TABLE IF NOT EXISTS goauth.users (
+CREATE SCHEMA IF NOT EXISTS chatroom;
+
+CREATE TABLE IF NOT EXISTS users (
 			id SERIAL PRIMARY KEY,
 			email VARCHAR(255) UNIQUE NOT NULL,
 			password_hash VARCHAR(255) NOT NULL,
@@ -7,3 +9,14 @@ CREATE TABLE IF NOT EXISTS goauth.users (
 			verification_token VARCHAR(300),
 			verification_expires_at TIMESTAMP
 		);
+
+
+CREATE TABLE IF NOT EXISTS messages (
+  id SERIAL PRIMARY KEY,
+  content VARCHAR(500),
+  sender_id int,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  constraint fk_sender_id foreign key (sender_id)
+  REFERENCES users(id)
+);
+

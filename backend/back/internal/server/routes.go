@@ -20,6 +20,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.HandleFunc("/api/register", handlers.Register).Methods("POST", "OPTIONS")
 	r.HandleFunc("/api/login", handlers.Login).Methods("POST", "OPTIONS")
 	r.HandleFunc("/api/verify", handlers.VerifyEmail).Methods("GET", "OPTIONS")
+	r.HandleFunc("/api/message", handlers.MessageHandler).Methods("GET", "OPTIONS")
 
 	// Protected Routes
 	r.HandleFunc("/api/profile", middleware.AuthMiddleware(handlers.Profile)).Methods("GET", "OPTIONS")
