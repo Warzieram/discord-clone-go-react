@@ -1,6 +1,6 @@
-import {  useState } from "react";
-import { useDispatch } from "react-redux";
-import { setToken, setUser, type User } from "../store/store";
+import {  useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { setToken, setUser, type RootState, type User } from "../store/store";
 import LoginForm, { type LoginFormReturn } from "../components/LoginForm";
 import { useNavigate } from "react-router-dom";
 import { BACKEND_URL } from "./Home";
@@ -14,6 +14,13 @@ const Login = () => {
   const [error, setError] = useState<string>();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const token = useSelector((state: RootState) => state.token.token)
+
+  useEffect(() => {
+    if (token) {
+      navigate("/");
+    }
+  }, [token, navigate]);
 
   const handleLogin = async ({ email, password }: LoginFormReturn) => {
     try {
@@ -33,7 +40,8 @@ const Login = () => {
 
       const json = (await response.json()) as LoginApiResponseType;
       console.log(json);
-
+      console.log(json.token);
+      
       dispatch(setToken(json.token));
       dispatch(setUser(json.user));
       navigate("/");

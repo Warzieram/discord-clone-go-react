@@ -46,6 +46,9 @@ const Home = () => {
       <p>Email: {user.email}</p>
       <p>Created on: {creationDate}</p>
       <button onClick={handleLogout}>Logout</button>
+      <RedirectionButton to="/chatroom" variation="light">
+        Chat
+      </RedirectionButton>
     </>
   );
 };

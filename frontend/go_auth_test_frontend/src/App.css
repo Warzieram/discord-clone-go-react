@@ -1,8 +1,10 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 
 form { 
@@ -21,4 +23,30 @@ input {
   background-color: #888;
   padding: 15px;
   border-radius: 20px;
+}
+
+.message-container {
+  background-color: #666;
+  border-radius: 20px;
+  padding: 15px;
+}
+
+.message-header {
+  display: flex;
+  justify-content: flex-start;
+  padding-left: 10px;
+  border-bottom: solid black 1px;
+  font-size: 9px;
+}
+
+
+
+.message-input {
+  width: 80%;
+}
+
+.message-input-form {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
 }

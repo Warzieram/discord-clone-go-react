@@ -9,10 +9,14 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
+	_ "embed"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/joho/godotenv/autoload"
 )
+
+//go:embed sql
+var schemaSQL string
 
 // Service represents a service that interacts with a database.
 type Service interface {
@@ -78,19 +82,13 @@ func New() Service {
 
 func Init() {
 	
-	sqlQueries := &SQLQueries{QueriesPath: "internal/database/sql"}
+	log.Println("[LOG]: ", schemaSQL)
 
-	initQuery, err := sqlQueries.LoadQuery("schema.sql")
-	if err != nil {
-		log.Fatalf("Erreur: %v\n", err)
-		return
-	}
-	log.Println("Loaded Request: ", initQuery)
-
-	_, err = DbInstance.DB.Exec(initQuery)
+	res, err := DbInstance.DB.Exec(schemaSQL)
 	if err != nil {
 		log.Fatal("Couldn't create tables: ", err)
 	}
+	log.Println(res)
 }
 
 // Health checks the health of the database connection by pinging the database.

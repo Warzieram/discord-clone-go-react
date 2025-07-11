@@ -15,6 +15,7 @@ import (
 type User struct {
 	ID                    int            `json:"id"`
 	Email                 string         `json:"email"`
+	Username              string         `json:"username"`
 	PasswordHash          string         `json:"-"`
 	CreatedAt             time.Time      `json:"created_at"`
 	EmailVerified         bool           `json:"email_verified"`
@@ -25,6 +26,7 @@ type User struct {
 type UserCredentials struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+	Username string `json:"username"`
 }
 
 func (u *User) HashPassword(password string) error {
@@ -62,8 +64,8 @@ func (u *User) CreateAccountVerificationToken() error {
 }
 
 func (u *User) Save() error {
-	query := `INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id, created_at`
-	_, err := database.DbInstance.DB.Exec(query, u.Email, u.PasswordHash)
+	query := `INSERT INTO users (email, username, password_hash) VALUES ($1, $2, $3) RETURNING id, created_at`
+	_, err := database.DbInstance.DB.Exec(query, u.Email, u.Username, u.PasswordHash)
 	if err != nil {
 		return err
 	}
@@ -92,7 +94,7 @@ func (u *User) VerifyEmail() error {
 	}
 
 	// if expiration date is already passed
-	if u.VerificationExpiresAt.Time.Before(time.Now()){
+	if u.VerificationExpiresAt.Time.Before(time.Now()) {
 		return errors.New("verification token expired")
 	}
 	query := `UPDATE users SET email_verified = true WHERE id = $1`
@@ -105,8 +107,8 @@ func (u *User) VerifyEmail() error {
 	return nil
 }
 
-func CreateUser(email, password string) (*User, error) {
-	user := &User{Email: email}
+func CreateUser(email string, username string, password string) (*User, error) {
+	user := &User{Email: email, Username: username}
 
 	if err := user.HashPassword(password); err != nil {
 		return nil, err
@@ -115,12 +117,30 @@ func CreateUser(email, password string) (*User, error) {
 	return user, nil
 }
 
+func GetUserById(id int) (*User, error) {
+	user := &User{}
+	query := `SELECT id, email, username, password_hash, created_at, email_verified FROM users WHERE id=$1`
+
+	err := database.DbInstance.DB.QueryRow(query, id).Scan(
+		&user.ID, &user.Email, &user.Username, &user.PasswordHash, &user.CreatedAt, &user.EmailVerified,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, errors.New("user not found")
+		}
+		return nil, err
+	}
+
+	return user, nil
+
+}
+
 func GetUserByEmail(email string) (*User, error) {
 	user := &User{}
-	query := `SELECT id, email, password_hash, created_at, email_verified FROM users WHERE email=$1`
+	query := `SELECT id, email, username, password_hash, created_at, email_verified FROM users WHERE email=$1`
 
 	err := database.DbInstance.DB.QueryRow(query, email).Scan(
-		&user.ID, &user.Email, &user.PasswordHash, &user.CreatedAt, &user.EmailVerified,
+		&user.ID, &user.Email, &user.Username, &user.PasswordHash, &user.CreatedAt, &user.EmailVerified,
 	)
 
 	if err != nil {
@@ -136,10 +156,10 @@ func GetUserByEmail(email string) (*User, error) {
 
 func GetUserByVerificationToken(token string) (*User, error) {
 	user := &User{}
-	query := `SELECT id, email, created_at, verification_expires_at FROM users WHERE verification_token=$1`
+	query := `SELECT id, email, username, created_at, verification_expires_at FROM users WHERE verification_token=$1`
 
 	err := database.DbInstance.DB.QueryRow(query, token).Scan(
-		&user.ID, &user.Email, &user.CreatedAt, &user.VerificationExpiresAt,
+		&user.ID, &user.Email, &user.Username, &user.CreatedAt, &user.VerificationExpiresAt,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {

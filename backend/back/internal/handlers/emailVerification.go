@@ -37,7 +37,7 @@ func VerifyEmail(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Missing token param", http.StatusBadRequest)
 		return
 	}
-	http.Redirect(w, r, "http://localhost:5173/login", http.StatusMovedPermanently)
+	http.Redirect(w, r, "http://192.168.1.151:5173/login", http.StatusMovedPermanently)
 
 }
 

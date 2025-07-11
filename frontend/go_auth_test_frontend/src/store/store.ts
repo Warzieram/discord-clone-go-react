@@ -40,7 +40,7 @@ const tokenSlice = createSlice({
   reducers: {
     setToken: (state, action) => {
       localStorage.setItem("JWT", action.payload)
-      state = action.payload;
+      state.token = action.payload;
     },
     clearToken: (state) => {
       state.token = null;
