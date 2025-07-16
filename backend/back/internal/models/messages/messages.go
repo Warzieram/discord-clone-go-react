@@ -41,7 +41,7 @@ func (m *Message) ToSendFormat() (*MessageResponse, error) {
 	response := &MessageResponse{
 		Content:  m.Content,
 		CreateAt: m.CreatedAt,
-		Sender:   sender.Email,
+		Sender:   sender.Username,
 	}
 
 	return response, nil
@@ -60,10 +60,38 @@ func (m Message) Save() (int, error) {
 		return 0, err
 	}
 
-
 	log.Println("ID: ", id)
 
 	return id, nil
+}
+
+func GetLastMessages(limit int, offset int) ([]Message, error) {
+	query := `SELECT id, content, created_at, sender_id FROM messages LIMIT $1 OFFSET $2`
+	rows, err := database.DbInstance.DB.Query(query, limit, offset)
+	if err != nil {
+		log.Printf("[ERROR] Couldn't get last %v messages: %s", limit, err)
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var messages []Message
+
+	for rows.Next() {
+		var message Message
+		if err := rows.Scan(&message.Id, &message.Content, &message.SenderID); err != nil {
+			log.Println("[ERROR] Couldn't map messages into memory: ", err)
+			return messages, err
+		}
+		messages = append(messages, message)
+	}
+
+	if err = rows.Err(); err != nil {
+		return messages, err
+	}
+
+	return messages, nil
+
 }
 
 func GetMessageById(id int) (*Message, error) {

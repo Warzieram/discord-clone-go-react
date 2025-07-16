@@ -57,15 +57,17 @@ const RegisterForm = ({ callback }: RegisterFormProps) => {
           }}
           placeholder="example@thing.com"
         />
-      </form>
       <button
-        onClick={() => {
+        onClick={(e) => {
+          e.preventDefault()
           callback({ email: email, password: password, username: username });
         }}
+          type="submit"
       >
         {" "}
         S'inscrire{" "}
       </button>
+      </form>
     </div>
   );
 };

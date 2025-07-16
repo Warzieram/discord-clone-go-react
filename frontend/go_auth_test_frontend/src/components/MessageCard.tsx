@@ -22,7 +22,7 @@ const MessageCard = ({ message }: MessageCardProps) => {
   return (
     <div className="message-container">
       <div className="message-header">
-        <p className="message-sender">Sent by: {message.sender}</p>
+        <p className="message-sender">{message.sender}</p>
       </div>
       <div className="message-body">
         <p className="message-content">{message.content}</p>

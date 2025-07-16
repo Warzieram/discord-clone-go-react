@@ -15,6 +15,7 @@ const ChatRoom = () => {
   const [lastMessage, setLastMessage] = useState<Message>();
   const [messages, setMessages] = useState<Array<Message>>([]);
   const [input, setInput] = useState<string>("");
+  const [error, setError] = useState<string | null>(null)
   const token = useSelector((state: RootState) => state.token.token);
   const navigate = useNavigate();
   const ws = useRef<WebSocket | null>(null);
@@ -28,12 +29,13 @@ const ChatRoom = () => {
       navigate("/login");
     }
 
-    ws.current = new WebSocket("ws://192.168.1.151:8080/api/message", [
+    ws.current = new WebSocket("ws://localhost:8080/api/message", [
       `auth.${token}`,
     ]);
     console.log(ws.current);
     ws.current.addEventListener("open", () => {
       console.log("WS connection established");
+      setError("")
     });
 
     ws.current.addEventListener("message", (event) => {
@@ -42,6 +44,7 @@ const ChatRoom = () => {
     });
 
     ws.current.addEventListener("close", () => {
+      setError("You got disconnected, please refresh the page")
       console.log("Closed ws connexion");
     });
 
@@ -71,7 +74,7 @@ const ChatRoom = () => {
       {messages.map((message: Message, id: number) => (
         <MessageCard message={message} key={id} />
       ))}
-      <form>
+      <form className="message-form">
         <div className="message-input-form">
           <input
             className="message-input"
@@ -85,6 +88,11 @@ const ChatRoom = () => {
           </button>
         </div>
       </form>
+      {
+        error && (
+          <div> {error} </div>
+        )
+      }
     </>
   );
 };

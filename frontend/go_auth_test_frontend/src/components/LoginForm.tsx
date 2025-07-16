@@ -47,15 +47,18 @@ function LoginForm({ callback }: LoginFormProps) {
           }}
           placeholder="example@thing.com"
         />
+
+        <button
+          type="submit"
+          onClick={(e) => {
+            e.preventDefault()
+            callback({ email: email, password: password });
+          }}
+        >
+          {" "}
+          Se Connecter{" "}
+        </button>
       </form>
-      <button
-        onClick={() => {
-          callback({ email: email, password: password });
-        }}
-      >
-        {" "}
-        Se Connecter{" "}
-      </button>
     </div>
   );
 }

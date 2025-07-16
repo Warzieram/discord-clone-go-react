@@ -11,13 +11,30 @@ CREATE TABLE IF NOT EXISTS chatroom.users (
 			verification_expires_at TIMESTAMP
 		);
 
+/*
+CREATE TABLE IF NOT EXISTS chatroom.rooms (
+  id SERIAL PRIMARY KEY,
+);
+*/
 
 CREATE TABLE IF NOT EXISTS chatroom.messages (
   id SERIAL PRIMARY KEY,
   content VARCHAR(500),
   sender_id int,
+  room_id int,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  constraint fk_sender_id foreign key (sender_id)
+  --CONSTRAINT fk_room_id FOREIGN KEY (room_id)
+  --REFERENCES chatroom.rooms(id),
+  CONSTRAINT fk_sender_id FOREIGN KEY (sender_id)
   REFERENCES chatroom.users(id)
 );
-
+/*
+CREATE TABLE IF NOT EXISTS chatroom.has_user (
+  message_id int,
+  room_id int,
+  CONSTRAINT fk_message_id FOREIGN KEY (sender_id)
+  REFERENCES chatroom.users(id),
+  CONSTRAINT fk_room_id FOREIGN KEY (room_id)
+  REFERENCES chatroom.rooms(id),
+)
+  */
