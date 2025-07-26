@@ -22,6 +22,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	// Protected Routes
 	r.HandleFunc("/api/profile", middleware.AuthMiddleware(handlers.Profile)).Methods("GET", "OPTIONS")
+	r.HandleFunc("/api/messages", middleware.AuthMiddleware(handlers.RetrieveMessages) ).Methods("GET", "OPTIONS")
 	r.HandleFunc("/api/message", middleware.WSAuthMiddleware(handlers.MessageHandler)).Methods("GET", "OPTIONS")
 	go handlers.SendMessage()
 

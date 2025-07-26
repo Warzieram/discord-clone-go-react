@@ -10,12 +10,13 @@ import { useNavigate } from "react-router-dom";
 import type { RootState } from "../store/store";
 import type { Message } from "../components/MessageCard";
 import MessageCard from "../components/MessageCard";
+import { BACKEND_URL } from "./Home";
 
 const ChatRoom = () => {
   const [lastMessage, setLastMessage] = useState<Message>();
   const [messages, setMessages] = useState<Array<Message>>([]);
   const [input, setInput] = useState<string>("");
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null);
   const token = useSelector((state: RootState) => state.token.token);
   const navigate = useNavigate();
   const ws = useRef<WebSocket | null>(null);
@@ -29,13 +30,39 @@ const ChatRoom = () => {
       navigate("/login");
     }
 
+    const retrieveMessages = async () => {
+      try {
+        const res = await fetch(
+          BACKEND_URL + "/api/messages?limit=10&offset=0",
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + token,
+            },
+          },
+        );
+        if (!res.ok) {
+          throw new Error(await res.text());
+        }
+        const retrievedMessages = (await res.json()) as Array<Message>;
+        setMessages(retrievedMessages)
+        console.log(retrievedMessages);
+      } catch (error) {
+        console.error(error);
+        const err = error as Error;
+        setError(err.message);
+      }
+    };
+
+    retrieveMessages();
+
     ws.current = new WebSocket("ws://localhost:8080/api/message", [
       `auth.${token}`,
     ]);
     console.log(ws.current);
     ws.current.addEventListener("open", () => {
       console.log("WS connection established");
-      setError("")
+      setError("");
     });
 
     ws.current.addEventListener("message", (event) => {
@@ -44,7 +71,7 @@ const ChatRoom = () => {
     });
 
     ws.current.addEventListener("close", () => {
-      setError("You got disconnected, please refresh the page")
+      setError("You got disconnected, please refresh the page");
       console.log("Closed ws connexion");
     });
 
@@ -53,8 +80,7 @@ const ChatRoom = () => {
         ws.current.close();
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [token, navigate]);
 
   useEffect(() => {
     if (lastMessage) {
@@ -88,11 +114,7 @@ const ChatRoom = () => {
           </button>
         </div>
       </form>
-      {
-        error && (
-          <div> {error} </div>
-        )
-      }
+      {error && <div> {error} </div>}
     </>
   );
 };
