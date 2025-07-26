@@ -31,7 +31,6 @@ func RetrieveMessages(w http.ResponseWriter, r *http.Request)  {
 		log.Println("[ERROR] Couldn't retrieve messages: ", err)
 	}
 
-
-
+	log.Println(retrievedMessages)
 	
 }
