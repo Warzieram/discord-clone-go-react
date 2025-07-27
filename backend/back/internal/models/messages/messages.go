@@ -66,7 +66,7 @@ func (m Message) Save() (int, error) {
 }
 
 func GetLastMessages(limit int, offset int) ([]MessageResponse, error) {
-	query := `SELECT id, content, created_at, sender_id FROM messages LIMIT $1 OFFSET $2`
+	query := `SELECT id, content, created_at, sender_id FROM messages WHERE deleted = false LIMIT $1 OFFSET $2`
 	rows, err := database.DbInstance.DB.Query(query, limit, offset)
 	if err != nil {
 		log.Printf("[ERROR] Couldn't get last %v messages: %s", limit, err)
@@ -86,6 +86,7 @@ func GetLastMessages(limit int, offset int) ([]MessageResponse, error) {
 		sendFormat, err := message.ToSendFormat()
 		if err != nil {
 			log.Println("[ERROR] Couldn't convert message to send format: ", err)
+			return messages, err
 		}
 		messages = append(messages, *sendFormat)
 	}
@@ -96,6 +97,16 @@ func GetLastMessages(limit int, offset int) ([]MessageResponse, error) {
 
 	return messages, nil
 
+}
+
+func MarkAsDeleted(id int) error {
+	query := `UPDATE messages WHERE id=$1 SET deleted=true`
+	
+	_, err := database.DbInstance.DB.Exec(query, id)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func GetMessageById(id int) (*Message, error) {

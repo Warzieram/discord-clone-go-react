@@ -99,7 +99,10 @@ func (r RemoveRequest) GetType() CommandType {
 }
 
 func (r RemoveRequest) Execute(userID int) error {
-	return nil
+	log.Println("Executing request: ", r)
+
+	err := message.MarkAsDeleted(r.Data)
+	return err
 }
 
 func parseReq(s string) (Request, error) {

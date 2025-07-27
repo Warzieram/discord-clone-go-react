@@ -20,8 +20,9 @@ CREATE TABLE IF NOT EXISTS chatroom.rooms (
 CREATE TABLE IF NOT EXISTS chatroom.messages (
   id SERIAL PRIMARY KEY,
   content VARCHAR(500),
-  sender_id int,
-  room_id int,
+  sender_id INT,
+  room_id INT,
+  deleted BOOLEAN DEFAULT false,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   --CONSTRAINT fk_room_id FOREIGN KEY (room_id)
   --REFERENCES chatroom.rooms(id),
