@@ -12,6 +12,11 @@ import type { Message } from "../components/MessageCard";
 import MessageCard from "../components/MessageCard";
 import { BACKEND_URL } from "./Home";
 
+type BroadcastedMessage = {
+  command_type: string;
+  data: Message | number;
+};
+
 const ChatRoom = () => {
   const [lastMessage, setLastMessage] = useState<Message>();
   const [messages, setMessages] = useState<Array<Message>>([]);
@@ -19,6 +24,7 @@ const ChatRoom = () => {
   const [error, setError] = useState<string | null>(null);
   const token = useSelector((state: RootState) => state.token.token);
   const navigate = useNavigate();
+  const username = useSelector((state: RootState) => state.user.user?.username);
   const ws = useRef<WebSocket | null>(null);
 
   const handleType = (e: ChangeEvent<HTMLInputElement>) => {
@@ -29,6 +35,10 @@ const ChatRoom = () => {
     if (!token) {
       navigate("/login");
     }
+
+    const deleteMessage = (id: number) => {
+      setMessages(prev => prev.filter((m) => m.id !== id));
+    };
 
     const retrieveMessages = async () => {
       try {
@@ -45,8 +55,10 @@ const ChatRoom = () => {
           throw new Error(await res.text());
         }
         const retrievedMessages = (await res.json()) as Array<Message>;
-        setMessages(retrievedMessages)
         console.log(retrievedMessages);
+        if (retrievedMessages) {
+          setMessages(retrievedMessages);
+        }
       } catch (error) {
         console.error(error);
         const err = error as Error;
@@ -54,7 +66,7 @@ const ChatRoom = () => {
       }
     };
 
-    retrieveMessages();
+    retrieveMessages()
 
     ws.current = new WebSocket("ws://localhost:8080/api/message", [
       `auth.${token}`,
@@ -66,8 +78,15 @@ const ChatRoom = () => {
     });
 
     ws.current.addEventListener("message", (event) => {
-      console.log(event.data);
-      setLastMessage(JSON.parse(event.data));
+      const data: BroadcastedMessage = JSON.parse(event.data);
+      console.log(data);
+
+      if (data.command_type === "REMOVE") {
+        console.log("REMOVING", data.data);
+        deleteMessage(data.data as number);
+      } else if (data.command_type === "SEND") {
+        setLastMessage(data.data as Message);
+      }
     });
 
     ws.current.addEventListener("close", () => {
@@ -80,6 +99,7 @@ const ChatRoom = () => {
         ws.current.close();
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, navigate]);
 
   useEffect(() => {
@@ -91,14 +111,32 @@ const ChatRoom = () => {
   const sendMessage: MouseEventHandler<HTMLButtonElement> = (e) => {
     e.preventDefault();
     if (input && ws.current && ws.current.readyState == WebSocket.OPEN) {
-      ws.current.send("SEND " + input);
+      const request = {
+        command_type: "SEND",
+        data: input,
+      };
+      ws.current.send(JSON.stringify(request));
       setInput("");
     }
   };
+
+  const sendDeleteRequest = (id: number) => {
+    const request = {
+      command_type: "REMOVE",
+      data: id,
+    };
+    ws.current?.send(JSON.stringify(request));
+  };
+
   return (
     <>
       {messages.map((message: Message, id: number) => (
-        <MessageCard message={message} key={id} />
+        <MessageCard
+          message={message}
+          key={id}
+          currentUser={username}
+          onDeleteMessage={sendDeleteRequest}
+        />
       ))}
       <form className="message-form">
         <div className="message-input-form">

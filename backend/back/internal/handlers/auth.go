@@ -112,12 +112,14 @@ func Profile(w http.ResponseWriter, r *http.Request) {
 	log.Println("Getting profile for:", r.RemoteAddr)
 	userID := r.Context().Value("user_id").(int)
 	email := r.Context().Value("email").(string)
+	username := r.Context().Value("username").(string)
 	createdAt := r.Context().Value("created_at")
 
 	response := map[string]any{
 		"user_id":    userID,
 		"email":      email,
 		"created_at": createdAt,
+		"username": username,
 		"message":    "User Profile",
 	}
 

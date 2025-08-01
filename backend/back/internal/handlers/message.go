@@ -7,8 +7,6 @@ import (
 	"errors"
 	"log"
 	"net/http"
-	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -39,17 +37,38 @@ const (
 	REMOVE CommandType = "REMOVE"
 )
 
+type Command struct {
+	Type CommandType `json:"command_type"`
+}
+
 type Request interface {
 	GetType() CommandType
 	Execute(userID int) error
 }
 
 type SendRequest struct {
-	Data string
+	Data string `json:"data"`
 }
 
 func (s SendRequest) GetType() CommandType {
 	return SEND
+}
+
+type RemoveRequest struct {
+	Data int `json:"data"`
+}
+
+func (r RemoveRequest) GetType() CommandType {
+	return REMOVE
+}
+
+type BroadcastData interface {
+	int | message.MessageResponse
+}
+
+type Broadcast[T BroadcastData] struct {
+	Type CommandType `json:"command_type"`
+	Data T           `json:"data"`
 }
 
 func (s SendRequest) Execute(userID int) error {
@@ -79,7 +98,12 @@ func (s SendRequest) Execute(userID int) error {
 		return err
 	}
 
-	output, jsonErr := json.Marshal(response)
+	b := Broadcast[message.MessageResponse]{
+		"SEND",
+		*response,
+	}
+
+	output, jsonErr := json.Marshal(b)
 	if jsonErr != nil {
 		log.Println("ERROR converting message to json: ", err)
 		return jsonErr
@@ -90,45 +114,64 @@ func (s SendRequest) Execute(userID int) error {
 	return nil
 }
 
-type RemoveRequest struct {
-	Data int
-}
-
-func (r RemoveRequest) GetType() CommandType {
-	return REMOVE
-}
-
 func (r RemoveRequest) Execute(userID int) error {
 	log.Println("Executing request: ", r)
 
-	err := message.MarkAsDeleted(r.Data)
-	return err
+	m, err := message.GetMessageById(r.Data)
+	if err != nil {
+		return err
+	}
+
+	//Proprietary check
+	if m.SenderID == userID {
+		err = message.MarkAsDeleted(r.Data)
+		if err != nil {
+			return err
+		}
+		b := Broadcast[int]{
+			"REMOVE",
+			r.Data,
+		}
+		output, err := json.Marshal(b)
+		if err != nil {
+			return err
+		}
+
+		broadcast <- []byte(output)
+	}
+
+	return nil
 }
 
 func parseReq(s string) (Request, error) {
 
 	log.Println("PARSING request: ", s)
+	c := &Command{}
 
-	trimedString := strings.Trim(s, " ")
-	splitedString := strings.Split(trimedString, " ")
+	err := json.Unmarshal([]byte(s), c)
+	if err != nil {
+		return nil, err
+	}
+	log.Println(string(c.Type))
 
-	cmd := splitedString[0]
-	data := strings.Join(splitedString[1:], " ")
-
-	log.Println("COMMAND: ", cmd)
-	log.Println("DATA: ", data)
-
-	if cmd == string(SEND) {
-		return SendRequest{Data: data}, nil
-	} else if cmd == string(REMOVE) {
-		message_id, err := strconv.Atoi(data)
+	switch string(c.Type) {
+	case string(SEND):
+		req := &SendRequest{}
+		err := json.Unmarshal([]byte(s), req)
 		if err != nil {
 			return nil, err
 		}
-		return RemoveRequest{Data: message_id}, nil
+		return req, nil
+	case string(REMOVE):
+		req := &RemoveRequest{}
+		err := json.Unmarshal([]byte(s), req)
+		if err != nil {
+			return nil, err
+		}
+		return req, nil
+	default:
+		return nil, errors.New("unknown request type")
 	}
-	err := errors.New("invalid command")
-	return nil, err
 }
 
 func MessageHandler(w http.ResponseWriter, r *http.Request) {

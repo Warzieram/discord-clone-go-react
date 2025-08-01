@@ -12,7 +12,7 @@ import (
 type Claims struct {
 	UserID        int       `json:"user_id"`
 	Email         string    `json:"email"`
-	Username      string    `json:"usernam"`
+	Username      string    `json:"username"`
 	CreatedAt     time.Time `json:"created_at"`
 	EmailVerified bool      `json:"email_verified"`
 

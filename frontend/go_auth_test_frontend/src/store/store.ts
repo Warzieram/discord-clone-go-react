@@ -4,6 +4,7 @@ export type User = {
   id: number | undefined;
   email: string | undefined;
   created_at: string | undefined;
+  username : string | undefined
 };
 
 type UserState = {

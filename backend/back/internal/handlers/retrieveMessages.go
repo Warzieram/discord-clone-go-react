@@ -40,6 +40,6 @@ func RetrieveMessages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println(retrievedMessages)
+	//log.Println("RETRIEVED MESSAGES: ", retrievedMessages)
 
 }

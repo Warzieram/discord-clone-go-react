@@ -16,6 +16,7 @@ type Message struct {
 }
 
 type MessageResponse struct {
+	Id       int       `json:"id"`
 	Content  string    `json:"content"`
 	CreateAt time.Time `json:"created_at"`
 	Sender   string    `json:"sender"`
@@ -39,6 +40,7 @@ func (m *Message) ToSendFormat() (*MessageResponse, error) {
 	}
 
 	response := &MessageResponse{
+		Id:       m.Id,
 		Content:  m.Content,
 		CreateAt: m.CreatedAt,
 		Sender:   sender.Username,
@@ -66,7 +68,7 @@ func (m Message) Save() (int, error) {
 }
 
 func GetLastMessages(limit int, offset int) ([]MessageResponse, error) {
-	query := `SELECT id, content, created_at, sender_id FROM messages WHERE deleted = false LIMIT $1 OFFSET $2`
+	query := `SELECT id, content, created_at, sender_id FROM messages WHERE deleted = false ORDER BY created_at DESC LIMIT $1 OFFSET $2`
 	rows, err := database.DbInstance.DB.Query(query, limit, offset)
 	if err != nil {
 		log.Printf("[ERROR] Couldn't get last %v messages: %s", limit, err)
@@ -90,6 +92,7 @@ func GetLastMessages(limit int, offset int) ([]MessageResponse, error) {
 		}
 		messages = append(messages, *sendFormat)
 	}
+	log.Println(messages)
 
 	if err = rows.Err(); err != nil {
 		return messages, err
@@ -100,8 +103,8 @@ func GetLastMessages(limit int, offset int) ([]MessageResponse, error) {
 }
 
 func MarkAsDeleted(id int) error {
-	query := `UPDATE messages WHERE id=$1 SET deleted=true`
-	
+	query := `UPDATE messages SET deleted=true WHERE id=$1 `
+
 	_, err := database.DbInstance.DB.Exec(query, id)
 	if err != nil {
 		return err
