@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"log"
+	"strings"
 	"time"
 
 	"back/internal/database"
@@ -30,6 +31,9 @@ type UserCredentials struct {
 }
 
 func (u *User) HashPassword(password string) error {
+	if strings.Trim(password, " ") == "" {
+		return  errors.New("empty password")
+	}
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
