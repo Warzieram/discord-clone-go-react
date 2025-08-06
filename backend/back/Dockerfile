@@ -1,8 +1,6 @@
 FROM golang:1.24.4-bullseye
 
-
 WORKDIR /app
-
 
 COPY . .
 RUN go mod download
