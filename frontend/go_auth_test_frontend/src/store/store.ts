@@ -4,6 +4,7 @@ export type User = {
   id: number | undefined;
   email: string | undefined;
   created_at: string | undefined;
+  username : string | undefined
 };
 
 type UserState = {
@@ -40,7 +41,7 @@ const tokenSlice = createSlice({
   reducers: {
     setToken: (state, action) => {
       localStorage.setItem("JWT", action.payload)
-      state = action.payload;
+      state.token = action.payload;
     },
     clearToken: (state) => {
       state.token = null;

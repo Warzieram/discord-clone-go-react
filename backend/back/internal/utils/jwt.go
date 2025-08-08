@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"log"
 	"os"
 	"time"
 
@@ -9,24 +10,26 @@ import (
 )
 
 type Claims struct {
-	UserID int `json:"user_id"`
-	Email string `json:"email"`
-	CreatedAt time.Time `json:"created_at"`
-	EmailVerified bool `json:"email_verified"`
-	
+	UserID        int       `json:"user_id"`
+	Email         string    `json:"email"`
+	Username      string    `json:"username"`
+	CreatedAt     time.Time `json:"created_at"`
+	EmailVerified bool      `json:"email_verified"`
+
 	jwt.RegisteredClaims
 }
 
-func GenerateJWT(userID int, email string, createdAt time.Time, ) (string, error){
+func GenerateJWT(userID int, email string, username string, createdAt time.Time) (string, error) {
 	expirationTime := time.Now().Add(24 * time.Hour)
 
 	claims := &Claims{
-		UserID: userID,
-		Email: email,
+		UserID:    userID,
+		Email:     email,
+		Username: username,
 		CreatedAt: createdAt,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
-			IssuedAt: jwt.NewNumericDate(time.Now()),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
 
@@ -36,6 +39,8 @@ func GenerateJWT(userID int, email string, createdAt time.Time, ) (string, error
 
 func ValidateJWT(tokenString string) (*Claims, error) {
 	claims := &Claims{}
+
+	log.Println("Validating: ", tokenString)
 
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (any, error) {
 		return []byte(os.Getenv("JWT_SECRET")), nil

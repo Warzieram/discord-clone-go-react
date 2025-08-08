@@ -1,4 +1,9 @@
-import { useState, type ChangeEvent, type Dispatch, type SetStateAction } from "react";
+import {
+  useState,
+  type ChangeEvent,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 
 type RegisterFormProps = {
   callback: (args: RegisterFormReturn) => Promise<void>;
@@ -7,11 +12,13 @@ type RegisterFormProps = {
 export type RegisterFormReturn = {
   email: string;
   password: string;
+  username: string;
 };
 
 const RegisterForm = ({ callback }: RegisterFormProps) => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [username, setUsername] = useState<string>("");
 
   const handleChange = (
     event: ChangeEvent<HTMLInputElement>,
@@ -24,6 +31,14 @@ const RegisterForm = ({ callback }: RegisterFormProps) => {
   return (
     <div className="form-card">
       <form>
+        <label htmlFor="username">Username</label>
+        <input
+          type="text"
+          name="username"
+          id="username"
+          onChange={(e) => handleChange(e, setUsername)}
+          placeholder="Example123"
+        />
         <label htmlFor="email">Email</label>
         <input
           type="text"
@@ -42,15 +57,17 @@ const RegisterForm = ({ callback }: RegisterFormProps) => {
           }}
           placeholder="example@thing.com"
         />
-      </form>
       <button
-        onClick={() => {
-          callback({ email: email, password: password });
+        onClick={(e) => {
+          e.preventDefault()
+          callback({ email: email, password: password, username: username });
         }}
+          type="submit"
       >
         {" "}
-        Se Connecter{" "}
+        S'inscrire{" "}
       </button>
+      </form>
     </div>
   );
 };

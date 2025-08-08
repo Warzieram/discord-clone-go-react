@@ -5,8 +5,9 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { setUser, type User } from "./store/store";
+import { clearToken, setUser, type User } from "./store/store";
 import VerifyEmail from "./pages/VerifyEmail";
+import ChatRoom from "./pages/ChatRoom";
 
 function App() {
   const dispatch = useDispatch();
@@ -23,6 +24,7 @@ function App() {
           },
         });
         if (!response.ok) {
+          dispatch(clearToken())
           console.log(response);
         }
 
@@ -37,6 +39,10 @@ function App() {
 
   useEffect(() => {
     fetchUser();
+  }, [token]);
+
+  useEffect(() => {
+    fetchUser();
   }, []);
 
   return (
@@ -46,6 +52,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/account-created" element={<VerifyEmail />} />
+        <Route path="/chatroom" element={<ChatRoom />} />
       </Routes>
     </BrowserRouter>
   );

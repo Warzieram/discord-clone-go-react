@@ -4,7 +4,7 @@ import { clearToken, logout, type RootState } from "../store/store";
 import { parseISO } from "date-fns";
 import RedirectionButton from "../components/RedirectionButton";
 
-export const BACKEND_URL = "http://192.168.1.151:8080";
+export const BACKEND_URL = "http://localhost:8080";
 
 const Home = () => {
   const user = useSelector((state: RootState) => state.user.user);
@@ -46,6 +46,9 @@ const Home = () => {
       <p>Email: {user.email}</p>
       <p>Created on: {creationDate}</p>
       <button onClick={handleLogout}>Logout</button>
+      <RedirectionButton to="/chatroom" variation="light">
+        Chat
+      </RedirectionButton>
     </>
   );
 };

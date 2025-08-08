@@ -24,12 +24,12 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if creds.Email == "" || creds.Password == "" {
+	if creds.Email == "" || creds.Password == "" || creds.Username == "" {
 		http.Error(w, "Email or password required", http.StatusBadRequest)
 		return
 	}
 
-	u, err := user.CreateUser(creds.Email, creds.Password)
+	u, err := user.CreateUser(creds.Email, creds.Username, creds.Password)
 	if err != nil {
 		http.Error(w, "Something went wrong, Try again later", http.StatusInternalServerError)
 		log.Fatal("Couldn't create the user: ", err)
@@ -91,7 +91,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := utils.GenerateJWT(user.ID, user.Email, user.CreatedAt)
+	token, err := utils.GenerateJWT(user.ID, user.Email, user.Username, user.CreatedAt)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Error generating JWT", http.StatusInternalServerError)
@@ -112,12 +112,14 @@ func Profile(w http.ResponseWriter, r *http.Request) {
 	log.Println("Getting profile for:", r.RemoteAddr)
 	userID := r.Context().Value("user_id").(int)
 	email := r.Context().Value("email").(string)
+	username := r.Context().Value("username").(string)
 	createdAt := r.Context().Value("created_at")
 
 	response := map[string]any{
 		"user_id":    userID,
 		"email":      email,
 		"created_at": createdAt,
+		"username": username,
 		"message":    "User Profile",
 	}
 

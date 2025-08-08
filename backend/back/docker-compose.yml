@@ -10,6 +10,27 @@ services:
       - "${BLUEPRINT_DB_PORT}:5432"
     volumes:
       - psql_volume_bp:/var/lib/postgresql/data
+    env_file:
+      - .env
+
+  app:
+    build: .
+    restart: unless-stopped
+    ports: 
+      - "8080:8080"
+    environment: 
+      - PORT=8080
+      - APP_ENV=local
+      - BLUEPRINT_DB_HOST=psql_bp
+      - BLUEPRINT_DB_PORT=5432
+      - BLUEPRINT_DB_DATABASE=${BLUEPRINT_DB_DATABASE}
+      - BLUEPRINT_DB_USERNAME=${BLUEPRINT_DB_USERNAME}
+      - BLUEPRINT_DB_PASSWORD=${BLUEPRINT_DB_PASSWORD}
+      - BLUEPRINT_DB_SCHEMA=${BLUEPRINT_DB_SCHEMA}
+      - JWT_SECRET=${JWT_SECRET}
+      - MJ_APIKEY_PUBLIC=${MJ_APIKEY_PUBLIC}
+      - MJ_APIKEY_PRIVATE=${MJ_APIKEY_PRIVATE}
+
 
 volumes:
   psql_volume_bp:

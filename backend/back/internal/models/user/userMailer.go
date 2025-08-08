@@ -15,7 +15,7 @@ var (
 func SendCreationEmail(u *User) {
 	tokenString := u.VerificationToken.String
 
-	verificationURL := "http://localhost:8080/api/verify?token=" + tokenString
+	verificationURL := "http://192.168.1.151:8080/api/verify?token=" + tokenString
 
 	mj := mailjet.NewMailjetClient(publicKey, privateKey)
 	messageInfo := []mailjet.InfoMessagesV31{
@@ -32,7 +32,7 @@ func SendCreationEmail(u *User) {
 			},
 			Subject:  "Welcome !",
 			TextPart: "Congratulation ! You created your account !\n" + verificationURL,
-			HTMLPart: "<h1>Congratulations !</h1><p>You created your account\n" + verificationURL + "</p>",
+			HTMLPart: "<h1>Congratulations !</h1><p>You created your account\n " + verificationURL + "</p>",
 		},
 	}
 	messages := mailjet.MessagesV31{Info: messageInfo}
@@ -47,7 +47,7 @@ func SendCreationEmail(u *User) {
 
 func ReSendVerificationEmail(u *User) {
 	tokenString := u.VerificationToken.String
-	verificationURL := "http://localhost:8080/api/verify?token=" + tokenString
+	verificationURL := "http://192.168.1.151:8080/api/verify?token=" + tokenString
 
 	mj := mailjet.NewMailjetClient(publicKey, privateKey)
 	messageInfo := []mailjet.InfoMessagesV31{

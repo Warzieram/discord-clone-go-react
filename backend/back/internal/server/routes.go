@@ -15,7 +15,6 @@ func (s *Server) RegisterRoutes() http.Handler {
 	// Apply CORS middleware
 	r.Use(s.corsMiddleware)
 
-
 	// Public Routes
 	r.HandleFunc("/api/register", handlers.Register).Methods("POST", "OPTIONS")
 	r.HandleFunc("/api/login", handlers.Login).Methods("POST", "OPTIONS")
@@ -23,7 +22,9 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	// Protected Routes
 	r.HandleFunc("/api/profile", middleware.AuthMiddleware(handlers.Profile)).Methods("GET", "OPTIONS")
-
+	r.HandleFunc("/api/messages", middleware.AuthMiddleware(handlers.RetrieveMessages) ).Methods("GET", "OPTIONS")
+	r.HandleFunc("/api/message", middleware.WSAuthMiddleware(handlers.MessageHandler)).Methods("GET", "OPTIONS")
+	go handlers.SendMessage()
 
 	return r
 }
@@ -47,5 +48,3 @@ func (s *Server) corsMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
-
-

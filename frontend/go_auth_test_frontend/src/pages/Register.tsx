@@ -13,6 +13,7 @@ type RegisterResponseApiType = {
 type RegisterFormReturn = {
   email: string;
   password: string;
+  username: string;
 };
 
 const Register = () => {
@@ -27,7 +28,7 @@ const Register = () => {
     }
   }, [token, navigate]);
 
-  const handleRegister = async ({ email, password }: RegisterFormReturn) => {
+  const handleRegister = async ({ email, password, username }: RegisterFormReturn) => {
     try {
       const response = await fetch(BACKEND_URL + "/api/register", {
         method: "post",
@@ -37,6 +38,7 @@ const Register = () => {
         body: JSON.stringify({
           email,
           password,
+          username,
         }),
       });
       if (!response.ok) {
@@ -50,7 +52,8 @@ const Register = () => {
       navigate("/account-created");
     } catch (err) {
       console.log(err);
-      setError(err.message);
+      const error = err as Error
+      setError(error.message);
     }
   };
 
