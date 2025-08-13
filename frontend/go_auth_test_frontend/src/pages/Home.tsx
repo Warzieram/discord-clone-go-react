@@ -9,6 +9,7 @@ export const BACKEND_URL = "http://localhost:8080";
 export type Room = {
   id: number;
   name: string;
+  creator_id: number;
 };
 
 const Home = () => {

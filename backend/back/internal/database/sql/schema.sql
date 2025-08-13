@@ -14,7 +14,12 @@ CREATE TABLE IF NOT EXISTS chatroom.users (
 
 CREATE TABLE IF NOT EXISTS chatroom.rooms (
   id SERIAL PRIMARY KEY,
-  name VARCHAR(15)
+  name VARCHAR(15),
+  deleted BOOLEAN DEFAULT false,
+  creator_id INT NOT NULL,
+
+  CONSTRAINT fk_creator_id FOREIGN KEY(creator_id)
+  REFERENCES users(id)
 );
 
 

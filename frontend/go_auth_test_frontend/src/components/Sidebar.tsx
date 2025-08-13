@@ -9,11 +9,38 @@ type SidebarProps = {
   onClose: () => void;
 };
 
+type DeleteRoomRequestBody = {
+  id: number
+}
+
 const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const user = useSelector((state: RootState) => state.user.user);
   const token = useSelector((state: RootState) => state.token.token);
   const [rooms, setRooms] = useState<Array<Room>>([]);
   const location = useLocation();
+
+  const handleDeleteRoom = async (id: number) => {
+    if (user && token) {
+      const body : DeleteRoomRequestBody = {id}
+      try {
+        const res = await fetch(BACKEND_URL + "/api/room", {
+          method: "DELETE",
+          headers: {
+            "Content-type": "application/json",
+            Authorization: "Bearer " + token,
+          },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) {
+          throw new Error(await res.text());
+        }
+        setRooms((prev) => prev.filter((room) => room.id !== id))
+      } catch (error) {
+        const err = error as Error;
+        console.log(err);
+      }
+    }
+  };
 
   useEffect(() => {
     if (user && token) {
@@ -29,6 +56,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             throw new Error(await res.text());
           }
           const retrievedRooms = (await res.json()) as Array<Room>;
+          console.log(retrievedRooms);
           setRooms(retrievedRooms);
         } catch (error) {
           const err = error as Error;
@@ -45,18 +73,18 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     <>
       {/* Overlay for mobile */}
       {isOpen && <div className="sidebar-overlay" onClick={onClose} />}
-      
+
       {/* Sidebar */}
-      <div className={`sidebar ${isOpen ? 'sidebar--open' : ''}`}>
+      <div className={`sidebar ${isOpen ? "sidebar--open" : ""}`}>
         <div className="sidebar__header">
           <h3>Chat Rooms</h3>
         </div>
-        
+
         <div className="sidebar__content">
           <nav className="sidebar__nav">
             <Link
               to="/"
-              className={`sidebar__link ${location.pathname === '/' ? 'sidebar__link--active' : ''}`}
+              className={`sidebar__link ${location.pathname === "/" ? "sidebar__link--active" : ""}`}
               onClick={onClose}
             >
               <span className="sidebar__link-icon">🏠</span>
@@ -68,14 +96,22 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                 <Link
                   key={room.id}
                   to={`/chatroom/${room.id}`}
-                  className={`sidebar__link ${isActive ? 'sidebar__link--active' : ''}`}
+                  className={`sidebar__link ${isActive ? "sidebar__link--active" : ""}`}
                   onClick={onClose}
                 >
                   <span className="sidebar__link-icon">#</span>
                   {room.name}
+                  <button  onClick={() => handleDeleteRoom(room.id)}>X</button>
                 </Link>
               );
             })}
+            <Link
+              to={"/newroom"}
+              className={`sidebar__link ${location.pathname === "/newroom" ? "sidebar__link--active" : ""}`}
+              onClick={onClose}
+            >
+              + New Room
+            </Link>
           </nav>
         </div>
       </div>

@@ -53,11 +53,37 @@ const Login = () => {
   };
 
   return (
-    <>
-      <h2>Log In</h2>
-      <LoginForm callback={handleLogin} />
-      <p>{ error }</p>
-    </>
+    <div className="page-container">
+      <div className="page-content">
+        <h2>Welcome Back</h2>
+        <p className="page-description">
+          Sign in to your account to continue chatting with your community.
+        </p>
+        
+        <LoginForm callback={handleLogin} />
+        
+        {error && (
+          <div className="message error-message">
+            <span className="message-icon">⚠️</span>
+            {error}
+          </div>
+        )}
+        
+        <div className="page-actions">
+          <p style={{ color: '#b9bbbe', fontSize: '14px', marginTop: '16px' }}>
+            Don't have an account?{' '}
+            <a 
+              href="/register" 
+              style={{ color: '#5865f2', textDecoration: 'none' }}
+              onMouseOver={(e) => e.target.style.textDecoration = 'underline'}
+              onMouseOut={(e) => e.target.style.textDecoration = 'none'}
+            >
+              Sign up here
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
   );
 };
 

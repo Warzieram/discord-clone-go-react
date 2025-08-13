@@ -63,8 +63,6 @@ func (m Message) Save() (int, error) {
 		return 0, err
 	}
 
-	log.Println("ID: ", id)
-
 	return id, nil
 }
 
@@ -122,7 +120,7 @@ func GetMessageById(id int) (*Message, error) {
 		&message.Id, &message.Content, &message.CreatedAt, &message.SenderID, &message.RoomID,
 	)
 	if err != nil {
-		log.Println("Error creating message in database: ", err)
+		log.Println("Error retrieving message in database: ", err)
 		return nil, err
 	}
 

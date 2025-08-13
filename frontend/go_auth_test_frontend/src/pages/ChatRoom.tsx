@@ -58,7 +58,10 @@ const ChatRoom = () => {
         }
         const retrievedMessages = (await res.json()) as Array<Message>;
         console.log(retrievedMessages);
-        if (retrievedMessages) {
+        if (!retrievedMessages) {
+          setMessages([])
+        }
+        else{
           setMessages(retrievedMessages.reverse());
         }
       } catch (error) {

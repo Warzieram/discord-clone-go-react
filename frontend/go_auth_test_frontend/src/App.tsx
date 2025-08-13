@@ -9,6 +9,7 @@ import { clearToken, setUser, type User } from "./store/store";
 import VerifyEmail from "./pages/VerifyEmail";
 import ChatRoom from "./pages/ChatRoom";
 import Layout from "./components/Layout";
+import CreateRoom from "./pages/CreateRoom";
 
 function App() {
   const dispatch = useDispatch();
@@ -55,6 +56,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/account-created" element={<VerifyEmail />} />
           <Route path="/chatroom/:id" element={<ChatRoom />} />
+          <Route path="/newroom" element={<CreateRoom />} />
         </Routes>
       </Layout>
     </BrowserRouter>

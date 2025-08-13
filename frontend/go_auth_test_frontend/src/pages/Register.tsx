@@ -58,11 +58,37 @@ const Register = () => {
   };
 
   return (
-    <>
-      <h2>Register</h2>
-      <RegisterForm callback={handleRegister} />
-      {error}
-    </>
+    <div className="page-container">
+      <div className="page-content">
+        <h2>Join Our Community</h2>
+        <p className="page-description">
+          Create your account to start chatting and connect with others.
+        </p>
+        
+        <RegisterForm callback={handleRegister} />
+        
+        {error && (
+          <div className="message error-message">
+            <span className="message-icon">⚠️</span>
+            {error}
+          </div>
+        )}
+        
+        <div className="page-actions">
+          <p style={{ color: '#b9bbbe', fontSize: '14px', marginTop: '16px' }}>
+            Already have an account?{' '}
+            <a 
+              href="/login" 
+              style={{ color: '#5865f2', textDecoration: 'none' }}
+              onMouseOver={(e) => e.target.style.textDecoration = 'underline'}
+              onMouseOut={(e) => e.target.style.textDecoration = 'none'}
+            >
+              Sign in here
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
   );
 };
 
