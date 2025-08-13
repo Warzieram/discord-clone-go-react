@@ -11,11 +11,12 @@ CREATE TABLE IF NOT EXISTS chatroom.users (
 			verification_expires_at TIMESTAMP
 		);
 
-/*
+
 CREATE TABLE IF NOT EXISTS chatroom.rooms (
   id SERIAL PRIMARY KEY,
+  name VARCHAR(15)
 );
-*/
+
 
 CREATE TABLE IF NOT EXISTS chatroom.messages (
   id SERIAL PRIMARY KEY,
@@ -24,8 +25,10 @@ CREATE TABLE IF NOT EXISTS chatroom.messages (
   room_id INT,
   deleted BOOLEAN DEFAULT false,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  --CONSTRAINT fk_room_id FOREIGN KEY (room_id)
-  --REFERENCES chatroom.rooms(id),
+  
+
+  CONSTRAINT fk_room_id FOREIGN KEY (room_id)
+  REFERENCES chatroom.rooms(id),
   CONSTRAINT fk_sender_id FOREIGN KEY (sender_id)
   REFERENCES chatroom.users(id)
 );

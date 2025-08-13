@@ -12,6 +12,16 @@ func RetrieveMessages(w http.ResponseWriter, r *http.Request) {
 
 	limitParam := r.URL.Query().Get("limit")
 	offsetParam := r.URL.Query().Get("offset")
+	roomIDParam := r.URL.Query().Get("room")
+
+
+	roomID, roomIDErr := strconv.Atoi(roomIDParam)
+	if roomIDErr != nil {
+		log.Println("[ERROR] while retrieving room_ID: ", roomIDErr)
+		http.Error(w, "error parsing room parameter", http.StatusBadRequest)
+		return
+	}
+	log.Printf("Retriving messages in room %v ", roomID)
 
 	limit, limitErr := strconv.Atoi(limitParam)
 	if limitErr != nil {
@@ -27,9 +37,10 @@ func RetrieveMessages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	retrievedMessages, err := message.GetLastMessages(limit, offset)
+	retrievedMessages, err := message.GetLastMessages(roomID, limit, offset )
 	if err != nil {
 		log.Println("[ERROR] Couldn't retrieve messages: ", err)
+		http.Error(w, "error while retrieving messages", http.StatusInternalServerError)
 		return
 	}
 

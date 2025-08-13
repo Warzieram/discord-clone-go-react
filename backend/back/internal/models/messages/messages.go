@@ -13,6 +13,7 @@ type Message struct {
 	Content   string    `json:"content"`
 	CreatedAt time.Time `json:"created_at"`
 	SenderID  int       `json:"sender_id"`
+	RoomID    int       `json:"room_id"`
 }
 
 type MessageResponse struct {
@@ -22,8 +23,8 @@ type MessageResponse struct {
 	Sender   string    `json:"sender"`
 }
 
-func CreateMessage(content string, senderId int) (*Message, error) {
-	message := &Message{Content: content, SenderID: senderId}
+func CreateMessage(content string, senderId int, roomId int) (*Message, error) {
+	message := &Message{Content: content, SenderID: senderId, RoomID: roomId}
 
 	if content == "" {
 		return nil, errors.New("message content can't be null")
@@ -55,8 +56,8 @@ func (m Message) Save() (int, error) {
 	log.Printf("Saving message with content %s ans senderID %v", m.Content, m.SenderID)
 
 	id := 0
-	query := `INSERT INTO messages (content, sender_id) VALUES ($1, $2) RETURNING id`
-	err := database.DbInstance.DB.QueryRow(query, m.Content, m.SenderID).Scan(&id)
+	query := `INSERT INTO messages (content, sender_id, room_id) VALUES ($1, $2, $3) RETURNING id`
+	err := database.DbInstance.DB.QueryRow(query, m.Content, m.SenderID, m.RoomID).Scan(&id)
 	if err != nil {
 		log.Println("ERROR while saving message: ", err)
 		return 0, err
@@ -67,9 +68,9 @@ func (m Message) Save() (int, error) {
 	return id, nil
 }
 
-func GetLastMessages(limit int, offset int) ([]MessageResponse, error) {
-	query := `SELECT id, content, created_at, sender_id FROM messages WHERE deleted = false ORDER BY created_at DESC LIMIT $1 OFFSET $2`
-	rows, err := database.DbInstance.DB.Query(query, limit, offset)
+func GetLastMessages(room_id int, limit int, offset int) ([]MessageResponse, error) {
+	query := `SELECT id, content, created_at, sender_id, room_id FROM messages WHERE deleted = false AND room_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3`
+	rows, err := database.DbInstance.DB.Query(query, room_id, limit, offset)
 	if err != nil {
 		log.Printf("[ERROR] Couldn't get last %v messages: %s", limit, err)
 		return nil, err
@@ -81,14 +82,14 @@ func GetLastMessages(limit int, offset int) ([]MessageResponse, error) {
 
 	for rows.Next() {
 		var message Message
-		if err := rows.Scan(&message.Id, &message.Content, &message.CreatedAt, &message.SenderID); err != nil {
+		if err := rows.Scan(&message.Id, &message.Content, &message.CreatedAt, &message.SenderID, &message.RoomID); err != nil {
 			log.Println("[ERROR] Couldn't map messages into memory: ", err)
 			return messages, err
 		}
 		sendFormat, err := message.ToSendFormat()
 		if err != nil {
 			log.Println("[ERROR] Couldn't convert message to send format: ", err)
-			return messages, err
+			return nil, err
 		}
 		messages = append(messages, *sendFormat)
 	}
@@ -113,12 +114,12 @@ func MarkAsDeleted(id int) error {
 }
 
 func GetMessageById(id int) (*Message, error) {
-	query := `SELECT id, content, created_at, sender_id 
+	query := `SELECT id, content, created_at, sender_id, room_id
 	FROM messages WHERE id = $1`
 
 	message := &Message{}
 	err := database.DbInstance.DB.QueryRow(query, id).Scan(
-		&message.Id, &message.Content, &message.CreatedAt, &message.SenderID,
+		&message.Id, &message.Content, &message.CreatedAt, &message.SenderID, &message.RoomID,
 	)
 	if err != nil {
 		log.Println("Error creating message in database: ", err)

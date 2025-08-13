@@ -6,7 +6,7 @@ import {
   type MouseEventHandler,
 } from "react";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import type { RootState } from "../store/store";
 import type { Message } from "../components/MessageCard";
 import MessageCard from "../components/MessageCard";
@@ -26,6 +26,8 @@ const ChatRoom = () => {
   const navigate = useNavigate();
   const username = useSelector((state: RootState) => state.user.user?.username);
   const ws = useRef<WebSocket | null>(null);
+  const params = useParams()
+  const id = params.id
 
   const handleType = (e: ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
@@ -43,7 +45,7 @@ const ChatRoom = () => {
     const retrieveMessages = async () => {
       try {
         const res = await fetch(
-          BACKEND_URL + "/api/messages?limit=10&offset=0",
+          BACKEND_URL + "/api/messages?limit=10&offset=0&room="+id,
           {
             headers: {
               "Content-Type": "application/json",
@@ -57,7 +59,7 @@ const ChatRoom = () => {
         const retrievedMessages = (await res.json()) as Array<Message>;
         console.log(retrievedMessages);
         if (retrievedMessages) {
-          setMessages(retrievedMessages);
+          setMessages(retrievedMessages.reverse());
         }
       } catch (error) {
         console.error(error);
@@ -113,7 +115,10 @@ const ChatRoom = () => {
     if (input && ws.current && ws.current.readyState == WebSocket.OPEN) {
       const request = {
         command_type: "SEND",
-        data: input,
+        data: {
+          content: input,
+          room_id: parseInt(id || "-1")
+        },
       };
       ws.current.send(JSON.stringify(request));
       setInput("");
@@ -130,6 +135,7 @@ const ChatRoom = () => {
 
   return (
     <>
+    <h1>{}</h1>
       {messages.map((message: Message, id: number) => (
         <MessageCard
           message={message}

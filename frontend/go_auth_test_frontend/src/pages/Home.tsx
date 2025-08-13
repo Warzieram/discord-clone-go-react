@@ -6,8 +6,14 @@ import RedirectionButton from "../components/RedirectionButton";
 
 export const BACKEND_URL = "http://localhost:8080";
 
+export type Room = {
+  id: number;
+  name: string;
+};
+
 const Home = () => {
   const user = useSelector((state: RootState) => state.user.user);
+  const token = useSelector((state: RootState) => state.token.token);
   const dispatch = useDispatch();
   const [creationDate, setCreationDate] = useState<string>();
 
@@ -26,7 +32,7 @@ const Home = () => {
         setCreationDate(formatedDate);
       }
     }
-  }, [user]);
+  }, [user, token]);
 
   if (!user)
     return (
@@ -46,9 +52,6 @@ const Home = () => {
       <p>Email: {user.email}</p>
       <p>Created on: {creationDate}</p>
       <button onClick={handleLogout}>Logout</button>
-      <RedirectionButton to="/chatroom" variation="light">
-        Chat
-      </RedirectionButton>
     </>
   );
 };

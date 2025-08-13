@@ -14,7 +14,7 @@ func TestParseReq(t *testing.T) {
 	}{
 		{
 			name:        "Valid SEND request",
-			input:       `{"command_type":"SEND","data":"Hello World"}`,
+			input:       `{"command_type":"SEND","data":{"content":"Hello World","room_id":1}}`,
 			expectType:  SEND,
 			expectError: false,
 		},
@@ -79,7 +79,10 @@ func TestParseReq(t *testing.T) {
 }
 
 func TestSendRequestGetType(t *testing.T) {
-	req := SendRequest{Data: "test"}
+	req := SendRequest{Data: SendRequestData{
+		Content: "test",
+		RoomID:  1,
+	}}
 	if req.GetType() != SEND {
 		t.Errorf("Expected SEND, got %v", req.GetType())
 	}
@@ -132,21 +135,30 @@ func TestCommandTypeSerialization(t *testing.T) {
 
 func TestSendRequestExecute(t *testing.T) {
 	t.Run("Valid message content", func(t *testing.T) {
-		req := SendRequest{Data: "Hello World"}
+		req := SendRequest{Data: SendRequestData{
+			Content: "Hello World",
+			RoomID:  1,
+		}}
 
 		// Note: This test would require database setup for full testing
 		// For now, we test the basic validation logic
-		if req.Data == "" {
-			t.Errorf("Expected non-empty data")
+		if req.Data.Content == "" {
+			t.Errorf("Expected non-empty content")
+		}
+		if req.Data.RoomID <= 0 {
+			t.Errorf("Expected positive room ID")
 		}
 	})
 
 	t.Run("Empty message content", func(t *testing.T) {
-		req := SendRequest{Data: ""}
+		req := SendRequest{Data: SendRequestData{
+			Content: "",
+			RoomID:  1,
+		}}
 
 		// This should fail validation in the message creation
-		if req.Data != "" {
-			t.Errorf("Expected empty data")
+		if req.Data.Content != "" {
+			t.Errorf("Expected empty content")
 		}
 	})
 }

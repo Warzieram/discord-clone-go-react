@@ -8,6 +8,7 @@ import { useDispatch } from "react-redux";
 import { clearToken, setUser, type User } from "./store/store";
 import VerifyEmail from "./pages/VerifyEmail";
 import ChatRoom from "./pages/ChatRoom";
+import Layout from "./components/Layout";
 
 function App() {
   const dispatch = useDispatch();
@@ -47,13 +48,15 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/account-created" element={<VerifyEmail />} />
-        <Route path="/chatroom" element={<ChatRoom />} />
-      </Routes>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/account-created" element={<VerifyEmail />} />
+          <Route path="/chatroom/:id" element={<ChatRoom />} />
+        </Routes>
+      </Layout>
     </BrowserRouter>
   );
 }

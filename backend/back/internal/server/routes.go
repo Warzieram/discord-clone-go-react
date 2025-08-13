@@ -24,6 +24,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.HandleFunc("/api/profile", middleware.AuthMiddleware(handlers.Profile)).Methods("GET", "OPTIONS")
 	r.HandleFunc("/api/messages", middleware.AuthMiddleware(handlers.RetrieveMessages) ).Methods("GET", "OPTIONS")
 	r.HandleFunc("/api/message", middleware.WSAuthMiddleware(handlers.MessageHandler)).Methods("GET", "OPTIONS")
+	r.HandleFunc("/api/rooms", middleware.AuthMiddleware(handlers.RetrieveRooms)).Methods("GET", "OPTIONS")
 	go handlers.SendMessage()
 
 	return r

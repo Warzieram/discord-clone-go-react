@@ -46,8 +46,13 @@ type Request interface {
 	Execute(userID int) error
 }
 
+type SendRequestData struct {
+	Content string `json:"content"`
+	RoomID int `json:"room_id"`
+}
+
 type SendRequest struct {
-	Data string `json:"data"`
+	Data SendRequestData `json:"data"`
 }
 
 func (s SendRequest) GetType() CommandType {
@@ -73,7 +78,7 @@ type Broadcast[T BroadcastData] struct {
 
 func (s SendRequest) Execute(userID int) error {
 	log.Println("Executing request: ", s)
-	m, err := message.CreateMessage(s.Data, userID)
+	m, err := message.CreateMessage(s.Data.Content, userID, s.Data.RoomID)
 	if err != nil {
 		return err
 	}
