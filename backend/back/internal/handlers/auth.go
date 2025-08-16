@@ -55,12 +55,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(u)
-	if err != nil {
-		log.Println("ERROR: Coulnd't encode response: ", err)
-		return
-	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {

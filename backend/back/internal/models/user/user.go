@@ -69,7 +69,7 @@ func (u *User) CreateAccountVerificationToken() error {
 
 func (u *User) Save() error {
 	query := `INSERT INTO users (email, username, password_hash) VALUES ($1, $2, $3) RETURNING id, created_at`
-	_, err := database.DbInstance.DB.Exec(query, u.Email, u.Username, u.PasswordHash)
+	err := database.DbInstance.DB.QueryRow(query, u.Email, u.Username, u.PasswordHash).Scan(&u.ID, &u.CreatedAt)
 	if err != nil {
 		return err
 	}
