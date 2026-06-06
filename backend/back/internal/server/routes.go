@@ -3,7 +3,6 @@ package server
 import (
 	"back/internal/handlers"
 	"back/internal/middleware"
-	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -38,12 +37,7 @@ func (s *Server) corsMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Headers", "Accept, Authorization, Content-Type")
 		w.Header().Set("Access-Control-Allow-Credentials", "false") // Credentials not allowed with wildcard origins
 
-		// Handle preflight OPTIONS requests
-		if r.Method == http.MethodOptions {
-			log.Println("OPTIONS request treated")
-			w.WriteHeader(http.StatusOK)
-			return
-		}
+		w.WriteHeader(http.StatusOK)
 
 		next.ServeHTTP(w, r)
 	})

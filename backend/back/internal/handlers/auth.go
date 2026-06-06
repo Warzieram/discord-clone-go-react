@@ -32,14 +32,18 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	u, err := user.CreateUser(creds.Email, creds.Username, creds.Password)
 	if err != nil {
 		http.Error(w, "Something went wrong, Try again later", http.StatusInternalServerError)
-		log.Fatal("Couldn't create the user: ", err)
+		log.Println("Couldn't create the user: ", err)
 		return
 	}
 
 	err = u.Save()
 	if err != nil {
-		if strings.Contains(err.Error(), "clé dupliquée") {
-			http.Error(w, "Email Already Used", http.StatusConflict)
+		if strings.Contains(err.Error(), "users_username_key") {
+			http.Error(w, "Username already used", http.StatusConflict)
+			return
+		}
+		if strings.Contains(err.Error(), "users_email_key") {
+			http.Error(w, "Email already used", http.StatusConflict)
 			return
 		}
 		log.Println(err)
@@ -119,7 +123,7 @@ func Profile(w http.ResponseWriter, r *http.Request) {
 		"user_id":    userID,
 		"email":      email,
 		"created_at": createdAt,
-		"username": username,
+		"username":   username,
 		"message":    "User Profile",
 	}
 
