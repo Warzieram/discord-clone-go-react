@@ -1,9 +1,9 @@
 import { useDispatch, useSelector } from "react-redux";
-import {  setUser, type RootState, type User } from "../store/store";
-import { BACKEND_URL } from "./Home";
+import { setUser, type RootState, type User } from "../store/store";
 import { useEffect, useState } from "react";
 import RegisterForm from "../components/RegisterForm";
 import { useNavigate } from "react-router-dom";
+import { regsiter } from "../services/authService";
 
 type RegisterResponseApiType = {
   token: string;
@@ -28,19 +28,13 @@ const Register = () => {
     }
   }, [token, navigate]);
 
-  const handleRegister = async ({ email, password, username }: RegisterFormReturn) => {
+  const handleRegister = async ({
+    email,
+    password,
+    username,
+  }: RegisterFormReturn) => {
     try {
-      const response = await fetch(BACKEND_URL + "/api/register", {
-        method: "post",
-        headers: {
-          "Content-Type": "aplication/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-          username,
-        }),
-      });
+      const response = await regsiter(email, password, username);
       if (!response.ok) {
         throw new Error(await response.text());
       }
@@ -52,7 +46,7 @@ const Register = () => {
       navigate("/account-created");
     } catch (err) {
       console.log(err);
-      const error = err as Error
+      const error = err as Error;
       setError(error.message);
     }
   };

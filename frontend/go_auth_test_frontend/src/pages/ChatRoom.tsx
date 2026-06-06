@@ -10,12 +10,14 @@ import { useNavigate } from "react-router-dom";
 import type { RootState } from "../store/store";
 import type { Message } from "../components/MessageCard";
 import MessageCard from "../components/MessageCard";
-import { BACKEND_URL } from "./Home";
+import {
+  createMessageWebSocket,
+  getLastMessages,
+  sendDeleteRequest,
+  sendMessageWS,
+  type BroadcastedMessage,
+} from "../services/messageService";
 
-type BroadcastedMessage = {
-  command_type: string;
-  data: Message | number;
-};
 
 const ChatRoom = () => {
   const [lastMessage, setLastMessage] = useState<Message>();
@@ -36,21 +38,13 @@ const ChatRoom = () => {
       navigate("/login");
     }
 
-    const deleteMessage = (id: number) => {
-      setMessages(prev => prev.filter((m) => m.id !== id));
+    const deleteMessageFromList = (id: number) => {
+      setMessages((prev) => prev.filter((m) => m.id !== id));
     };
 
     const retrieveMessages = async () => {
       try {
-        const res = await fetch(
-          BACKEND_URL + "/api/messages?limit=10&offset=0",
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: "Bearer " + token,
-            },
-          },
-        );
+        const res = await getLastMessages(token || "", 10, 0);
         if (!res.ok) {
           throw new Error(await res.text());
         }
@@ -66,11 +60,10 @@ const ChatRoom = () => {
       }
     };
 
-    retrieveMessages()
+    retrieveMessages();
 
-    ws.current = new WebSocket("ws://localhost:8080/api/message", [
-      `auth.${token}`,
-    ]);
+    ws.current = createMessageWebSocket(token || "");
+
     console.log(ws.current);
     ws.current.addEventListener("open", () => {
       console.log("WS connection established");
@@ -83,7 +76,7 @@ const ChatRoom = () => {
 
       if (data.command_type === "REMOVE") {
         console.log("REMOVING", data.data);
-        deleteMessage(data.data as number);
+        deleteMessageFromList(data.data as number);
       } else if (data.command_type === "SEND") {
         setLastMessage(data.data as Message);
       }
@@ -99,7 +92,6 @@ const ChatRoom = () => {
         ws.current.close();
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, navigate]);
 
   useEffect(() => {
@@ -111,21 +103,9 @@ const ChatRoom = () => {
   const sendMessage: MouseEventHandler<HTMLButtonElement> = (e) => {
     e.preventDefault();
     if (input && ws.current && ws.current.readyState == WebSocket.OPEN) {
-      const request = {
-        command_type: "SEND",
-        data: input,
-      };
-      ws.current.send(JSON.stringify(request));
+      sendMessageWS(ws.current, input);
       setInput("");
     }
-  };
-
-  const sendDeleteRequest = (id: number) => {
-    const request = {
-      command_type: "REMOVE",
-      data: id,
-    };
-    ws.current?.send(JSON.stringify(request));
   };
 
   return (
@@ -135,7 +115,7 @@ const ChatRoom = () => {
           message={message}
           key={id}
           currentUser={username}
-          onDeleteMessage={sendDeleteRequest}
+          onDeleteMessage={(id) => sendDeleteRequest(id, ws.current)}
         />
       ))}
       <form className="message-form">
