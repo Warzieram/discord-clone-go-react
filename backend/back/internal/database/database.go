@@ -81,10 +81,13 @@ func New() Service {
 }
 
 func Init() {
-	
-	log.Println("[LOG]: ", schemaSQL)
+	// Substitute ${VAR} placeholders in the embedded SQL with environment
+	// variables (e.g. ${BLUEPRINT_DB_SCHEMA}) before executing it.
+	sqlText := os.Expand(schemaSQL, os.Getenv)
 
-	res, err := DbInstance.DB.Exec(schemaSQL)
+	log.Println("[LOG]: ", sqlText)
+
+	res, err := DbInstance.DB.Exec(sqlText)
 	if err != nil {
 		log.Fatal("Couldn't create tables: ", err)
 	}

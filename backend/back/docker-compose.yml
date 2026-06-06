@@ -12,12 +12,16 @@ services:
       - psql_volume_bp:/var/lib/postgresql/data
     env_file:
       - .env
+    networks:
+      - blueprint
 
   app:
     build: .
     restart: unless-stopped
     ports: 
       - "8080:8080"
+    networks:
+      - blueprint
     environment: 
       - PORT=8080
       - APP_ENV=local
@@ -34,3 +38,7 @@ services:
 
 volumes:
   psql_volume_bp:
+
+networks:
+  blueprint:
+    driver: bridge
