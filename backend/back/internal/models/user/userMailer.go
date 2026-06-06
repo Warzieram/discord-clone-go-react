@@ -17,6 +17,11 @@ func SendCreationEmail(u *User) {
 
 	verificationURL := "http://192.168.1.151:8080/api/verify?token=" + tokenString
 
+	if publicKey == "" || privateKey == "" {
+		log.Println("WARN: Mailjet API keys not set, skipping verification email. Verification URL:", verificationURL)
+		return
+	}
+
 	mj := mailjet.NewMailjetClient(publicKey, privateKey)
 	messageInfo := []mailjet.InfoMessagesV31{
 		{
@@ -38,7 +43,8 @@ func SendCreationEmail(u *User) {
 	messages := mailjet.MessagesV31{Info: messageInfo}
 	res, err := mj.SendMailV31(&messages)
 	if err != nil {
-		log.Fatal("Couldn't send the mail :", err)
+		log.Println("ERROR: Couldn't send the mail:", err)
+		return
 	}
 
 	log.Printf("Data: %+v\n", res)

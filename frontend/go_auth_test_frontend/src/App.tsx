@@ -1,6 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./App.css";
-import Home, { BACKEND_URL } from "./pages/Home";
+import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import { useEffect } from "react";
@@ -8,6 +8,7 @@ import { useDispatch } from "react-redux";
 import { clearToken, setUser, type User } from "./store/store";
 import VerifyEmail from "./pages/VerifyEmail";
 import ChatRoom from "./pages/ChatRoom";
+import { BACKEND_URL } from "./constants";
 
 function App() {
   const dispatch = useDispatch();
