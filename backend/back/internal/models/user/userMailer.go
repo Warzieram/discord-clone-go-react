@@ -10,12 +10,20 @@ import (
 var (
 	publicKey  = os.Getenv("MJ_APIKEY_PUBLIC")
 	privateKey = os.Getenv("MJ_APIKEY_PRIVATE")
+	domainName = os.Getenv("DOMAIN_NAME")
+	env        = os.Getenv("APP_ENV")
 )
 
 func SendCreationEmail(u *User) {
 	tokenString := u.VerificationToken.String
 
-	verificationURL := "http://192.168.1.151:8080/api/verify?token=" + tokenString
+	verificationURL := ""
+
+	if env == "dev" {
+		verificationURL = "http://192.168.1.151:8080/api/verify?token=" + tokenString
+	} else {
+		verificationURL = "https://" + domainName + "/api/verify?token=" + tokenString
+	}
 
 	if publicKey == "" || privateKey == "" {
 		log.Println("WARN: Mailjet API keys not set, skipping verification email. Verification URL:", verificationURL)
@@ -75,7 +83,5 @@ func ReSendVerificationEmail(u *User) {
 	}
 	log.Println(mj)
 	log.Println(messageInfo)
-
-	return
 
 }
