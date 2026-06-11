@@ -18,7 +18,7 @@ function App() {
     if (token) {
       console.log("Fetching User");
       try {
-        const response = await fetch(BACKEND_URL + "/api/profile", {
+        const response = await fetch(`${BACKEND_URL}/api/profile`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: "Bearer " + token,

@@ -1,7 +1,7 @@
 import { BACKEND_URL } from "../constants";
 
 const regsiter = async (email: string, password: string, username: string) => {
-  const response = await fetch(BACKEND_URL + "/api/register", {
+  const response = await fetch(`${BACKEND_URL}/api/register`, {
     method: "post",
     headers: {
       "Content-Type": "aplication/json",
@@ -17,7 +17,7 @@ const regsiter = async (email: string, password: string, username: string) => {
 };
 
 const login = async (email: string, password: string) => {
-  const response = await fetch(BACKEND_URL + "/api/login", {
+  const response = await fetch(`${BACKEND_URL}/api/login`, {
     method: "post",
     headers: {
       "Content-Type": "aplication/json",

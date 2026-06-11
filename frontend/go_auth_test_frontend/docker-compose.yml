@@ -1,0 +1,46 @@
+services:
+  # Production build served by nginx.
+  # Run with: docker compose up frontend
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Baked into the static bundle at build time. Override via the shell:
+        #   VITE_BACKEND_URL=https://api.example.com docker compose build frontend
+        VITE_BACKEND_URL: ${VITE_BACKEND_URL:-http://localhost:8080}
+    image: discord-clone-frontend:latest
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+  # Development server with hot-reload.
+  # Run with: docker compose --profile dev watch frontend-dev
+  frontend-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5173:5173"
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+    profiles:
+      - dev
+    develop:
+      watch:
+        # Sync source changes straight into the running container (Vite HMR picks them up)
+        - action: sync
+          path: ./src
+          target: /app/src
+        - action: sync
+          path: ./public
+          target: /app/public
+        - action: sync
+          path: ./index.html
+          target: /app/index.html
+        # Rebuild the image when dependencies or config change
+        - action: rebuild
+          path: ./package.json
+        - action: rebuild
+          path: ./package-lock.json
+        - action: rebuild
+          path: ./vite.config.ts
