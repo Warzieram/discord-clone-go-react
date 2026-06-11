@@ -37,7 +37,11 @@ func (s *Server) corsMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Headers", "Accept, Authorization, Content-Type")
 		w.Header().Set("Access-Control-Allow-Credentials", "false") // Credentials not allowed with wildcard origins
 
-		w.WriteHeader(http.StatusOK)
+		if r.Method == http.MethodOptions{
+			w.WriteHeader(http.StatusOK)
+			return
+
+		}
 
 		next.ServeHTTP(w, r)
 	})

@@ -176,8 +176,16 @@ func parseReq(s string) (Request, error) {
 
 func MessageHandler(w http.ResponseWriter, r *http.Request) {
 
+	// Echo back the client's requested subprotocol (e.g. "auth.<token>").
+	// Browsers fail the handshake if a subprotocol was offered but the server
+	// doesn't select one in the Sec-WebSocket-Protocol response header.
+	var respHeader http.Header
+	if proto := r.Header.Get("Sec-WebSocket-Protocol"); proto != "" {
+		respHeader = http.Header{"Sec-WebSocket-Protocol": {proto}}
+	}
+
 	// upgrade the connection to websocket
-	conn, err := upgrader.Upgrade(w, r, nil)
+	conn, err := upgrader.Upgrade(w, r, respHeader)
 	if err != nil {
 		log.Println("ERROR: Upgrade failed: ", err)
 		http.Error(w, "Couln't initiate websocket connection", http.StatusInternalServerError)

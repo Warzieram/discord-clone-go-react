@@ -1,5 +1,5 @@
 import type { Message } from "../components/MessageCard";
-import { BACKEND_URL } from "../constants";
+import { BACKEND_URL, WS_BACKEND_URL } from "../constants";
 
 export type BroadcastedMessage = {
   command_type: string;
@@ -12,7 +12,7 @@ const getLastMessages = async (
   offset: number,
 ) => {
   const res = await fetch(
-    BACKEND_URL + `/api/messages?limit=${limit}&offset=${offset}`,
+    `${BACKEND_URL}/api/messages?limit=${limit}&offset=${offset}`,
     {
       headers: {
         "Content-Type": "application/json",
@@ -25,7 +25,7 @@ const getLastMessages = async (
 };
 
 const createMessageWebSocket = (token: string) => {
-  return new WebSocket(`ws://${BACKEND_URL}/api/message`, [`auth.${token}`]);
+  return new WebSocket(`${WS_BACKEND_URL}/api/message`, [`auth.${token}`]);
 };
 
 const sendMessageWS = (ws: WebSocket, input: string) => {
