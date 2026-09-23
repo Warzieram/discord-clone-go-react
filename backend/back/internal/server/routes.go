@@ -3,6 +3,7 @@ package server
 import (
 	"back/internal/handlers"
 	"back/internal/middleware"
+	messagerepository "back/internal/repositories/message_repository"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -14,6 +15,11 @@ func (s *Server) RegisterRoutes() http.Handler {
 	// Apply CORS middleware
 	r.Use(s.corsMiddleware)
 
+	// Compose dependencies: build the message repository on the injected DB
+	// handle, then hand it to the message handlers.
+	messageRepo := messagerepository.NewPostgresMessageRepository(s.db.Conn())
+	messageHandlers := handlers.NewMessageHandlers(messageRepo)
+
 	// Public Routes
 	r.HandleFunc("/api/register", handlers.Register).Methods("POST", "OPTIONS")
 	r.HandleFunc("/api/login", handlers.Login).Methods("POST", "OPTIONS")
@@ -21,8 +27,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	// Protected Routes
 	r.HandleFunc("/api/profile", middleware.AuthMiddleware(handlers.Profile)).Methods("GET", "OPTIONS")
-	r.HandleFunc("/api/messages", middleware.AuthMiddleware(handlers.RetrieveMessages) ).Methods("GET", "OPTIONS")
-	r.HandleFunc("/api/message", middleware.WSAuthMiddleware(handlers.MessageHandler)).Methods("GET", "OPTIONS")
+	r.HandleFunc("/api/messages", middleware.AuthMiddleware(messageHandlers.RetrieveMessages)).Methods("GET", "OPTIONS")
+	r.HandleFunc("/api/message", middleware.WSAuthMiddleware(messageHandlers.MessageHandler)).Methods("GET", "OPTIONS")
 	go handlers.SendMessage()
 
 	return r
@@ -37,7 +43,7 @@ func (s *Server) corsMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Headers", "Accept, Authorization, Content-Type")
 		w.Header().Set("Access-Control-Allow-Credentials", "false") // Credentials not allowed with wildcard origins
 
-		if r.Method == http.MethodOptions{
+		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusOK)
 			return
 
