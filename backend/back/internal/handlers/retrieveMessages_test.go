@@ -50,6 +50,10 @@ func TestRetrieveMessagesParameterValidation(t *testing.T) {
 		},
 	}
 
+	// These cases all fail parameter validation before any repository access,
+	// so a nil repo is safe here.
+	h := NewMessageHandlers(nil)
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Create request with query parameters
@@ -64,7 +68,7 @@ func TestRetrieveMessagesParameterValidation(t *testing.T) {
 			rr := httptest.NewRecorder()
 
 			// Test parameter parsing - should fail before database call
-			RetrieveMessages(rr, req)
+			h.RetrieveMessages(rr, req)
 
 			// Check status code for parameter validation errors
 			if tt.expectError && rr.Code != http.StatusBadRequest {

@@ -1,8 +1,7 @@
 package handlers
 
-// TODO: Order this hot mess
-
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"log"
@@ -11,9 +10,18 @@ import (
 	"time"
 
 	"back/internal/models/messages"
+	messagerepository "back/internal/repositories/message_repository"
 
 	"github.com/gorilla/websocket"
 )
+
+type MessageHandlers struct {
+	repo messagerepository.MessageRepository
+}
+
+func NewMessageHandlers(repo messagerepository.MessageRepository) *MessageHandlers {
+	return &MessageHandlers{repo: repo}
+}
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
@@ -43,7 +51,7 @@ type Command struct {
 
 type Request interface {
 	GetType() CommandType
-	Execute(userID int) error
+	Execute(ctx context.Context, repo messagerepository.MessageRepository, userID int) error
 }
 
 type SendRequest struct {
@@ -71,7 +79,7 @@ type Broadcast[T BroadcastData] struct {
 	Data T           `json:"data"`
 }
 
-func (s SendRequest) Execute(userID int) error {
+func (s SendRequest) Execute(ctx context.Context, repo messagerepository.MessageRepository, userID int) error {
 	log.Println("Executing request: ", s)
 	m, err := message.CreateMessage(s.Data, userID)
 	if err != nil {
@@ -80,13 +88,13 @@ func (s SendRequest) Execute(userID int) error {
 
 	log.Println("Created message: ", m)
 
-	id, errSave := m.Save()
+	id, errSave := repo.Save(ctx, m)
 	if errSave != nil {
 		return errSave
 	}
 	log.Println("Saved message ID: ", id)
 
-	retrievedMessage, errRetrieved := message.GetMessageById(id)
+	retrievedMessage, errRetrieved := repo.GetByID(ctx, id)
 	if errRetrieved != nil {
 		return errRetrieved
 	}
@@ -114,17 +122,17 @@ func (s SendRequest) Execute(userID int) error {
 	return nil
 }
 
-func (r RemoveRequest) Execute(userID int) error {
+func (r RemoveRequest) Execute(ctx context.Context, repo messagerepository.MessageRepository, userID int) error {
 	log.Println("Executing request: ", r)
 
-	m, err := message.GetMessageById(r.Data)
+	m, err := repo.GetByID(ctx, r.Data)
 	if err != nil {
 		return err
 	}
 
 	//Proprietary check
 	if m.SenderID == userID {
-		err = message.MarkAsDeleted(r.Data)
+		err = repo.MarkAsDeleted(ctx, r.Data)
 		if err != nil {
 			return err
 		}
@@ -174,7 +182,7 @@ func parseReq(s string) (Request, error) {
 	}
 }
 
-func MessageHandler(w http.ResponseWriter, r *http.Request) {
+func (h *MessageHandlers) MessageHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Echo back the client's requested subprotocol (e.g. "auth.<token>").
 	// Browsers fail the handshake if a subprotocol was offered but the server
@@ -235,7 +243,7 @@ func MessageHandler(w http.ResponseWriter, r *http.Request) {
 		userID := r.Context().Value("user_id").(int)
 		log.Println("User ID: ", userID)
 
-		err = request.Execute(userID)
+		err = request.Execute(r.Context(), h.repo, userID)
 		if err != nil {
 			log.Println("ERROR while executing message request: ", err)
 			continue

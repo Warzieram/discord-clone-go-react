@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-func RetrieveMessages(w http.ResponseWriter, r *http.Request) {
+func (h *MessageHandlers) RetrieveMessages(w http.ResponseWriter, r *http.Request) {
 
 	limitParam := r.URL.Query().Get("limit")
 	offsetParam := r.URL.Query().Get("offset")
@@ -27,10 +27,23 @@ func RetrieveMessages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	retrievedMessages, err := message.GetLastMessages(limit, offset)
+	messages, err := h.repo.GetLast(r.Context(), limit, offset)
 	if err != nil {
 		log.Println("[ERROR] Couldn't retrieve messages: ", err)
+		http.Error(w, "couldn't retrieve messages", http.StatusInternalServerError)
 		return
+	}
+
+	// Convert each persisted message into its API send format (resolves sender).
+	retrievedMessages := make([]message.MessageResponse, 0, len(messages))
+	for i := range messages {
+		sendFormat, err := messages[i].ToSendFormat()
+		if err != nil {
+			log.Println("[ERROR] Couldn't convert message to send format: ", err)
+			http.Error(w, "couldn't format messages", http.StatusInternalServerError)
+			return
+		}
+		retrievedMessages = append(retrievedMessages, *sendFormat)
 	}
 
 	w.Header().Set("Content-Type", "application/json")

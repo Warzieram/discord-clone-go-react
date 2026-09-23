@@ -27,6 +27,10 @@ type Service interface {
 	// Close terminates the database connection.
 	// It returns an error if the connection cannot be closed.
 	Close() error
+
+	// Conn returns the underlying database handle so repositories can be
+	// constructed with an injected connection instead of the global singleton.
+	Conn() *sql.DB
 }
 
 type service struct {
@@ -143,6 +147,11 @@ func (s *service) Health() map[string]string {
 	}
 
 	return stats
+}
+
+// Conn returns the underlying *sql.DB handle.
+func (s *service) Conn() *sql.DB {
+	return s.DB
 }
 
 // Close closes the database connection.
