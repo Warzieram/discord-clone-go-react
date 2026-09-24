@@ -8,11 +8,12 @@ export type BroadcastedMessage = {
 
 const getLastMessages = async (
   token: string,
+  roomId: number,
   limit: number,
   offset: number,
 ) => {
   const res = await fetch(
-    `${BACKEND_URL}/api/messages?limit=${limit}&offset=${offset}`,
+    `${BACKEND_URL}/api/messages?roomID=${roomId}&limit=${limit}&offset=${offset}`,
     {
       headers: {
         "Content-Type": "application/json",
@@ -24,8 +25,10 @@ const getLastMessages = async (
   return res;
 };
 
-const createMessageWebSocket = (token: string) => {
-  return new WebSocket(`${WS_BACKEND_URL}/api/message`, [`auth.${token}`]);
+const createMessageWebSocket = (token: string, roomId: number) => {
+  return new WebSocket(`${WS_BACKEND_URL}/api/message?roomID=${roomId}`, [
+    `auth.${token}`,
+  ]);
 };
 
 const sendMessageWS = (ws: WebSocket, input: string) => {

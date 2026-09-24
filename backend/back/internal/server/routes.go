@@ -4,6 +4,7 @@ import (
 	"back/internal/handlers"
 	"back/internal/middleware"
 	messagerepository "back/internal/repositories/message_repository"
+	roomrepository "back/internal/repositories/room_repository"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -19,6 +20,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 	// handle, then hand it to the message handlers.
 	messageRepo := messagerepository.NewPostgresMessageRepository(s.db.Conn())
 	messageHandlers := handlers.NewMessageHandlers(messageRepo)
+	roomRepo := roomrepository.NewPostgresRoomRepository(s.db.Conn())
+	roomHandlers := handlers.NewRoomHandlers(roomRepo)
 
 	// Public Routes
 	r.HandleFunc("/api/register", handlers.Register).Methods("POST", "OPTIONS")
@@ -28,6 +31,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 	// Protected Routes
 	r.HandleFunc("/api/profile", middleware.AuthMiddleware(handlers.Profile)).Methods("GET", "OPTIONS")
 	r.HandleFunc("/api/messages", middleware.AuthMiddleware(messageHandlers.RetrieveMessages)).Methods("GET", "OPTIONS")
+	r.HandleFunc("/api/rooms", middleware.AuthMiddleware(roomHandlers.ListRooms)).Methods("GET", "OPTIONS")
+	r.HandleFunc("/api/rooms", middleware.AuthMiddleware(roomHandlers.CreateRoom)).Methods("POST", "OPTIONS")
 	r.HandleFunc("/api/message", middleware.WSAuthMiddleware(messageHandlers.MessageHandler)).Methods("GET", "OPTIONS")
 	go handlers.SendMessage()
 
