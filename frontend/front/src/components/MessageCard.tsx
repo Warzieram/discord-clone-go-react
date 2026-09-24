@@ -5,6 +5,7 @@ export type Message = {
   sender: string;
   created_at: string;
   content: string;
+  room_id?: number;
 };
 
 type MessageCardProps = {

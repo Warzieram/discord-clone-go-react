@@ -12,6 +12,7 @@ type Message struct {
 	Content   string    `json:"content"`
 	CreatedAt time.Time `json:"created_at"`
 	SenderID  int       `json:"sender_id"`
+	RoomID    int       `json:"room_id"`
 }
 
 type MessageResponse struct {
@@ -19,10 +20,11 @@ type MessageResponse struct {
 	Content  string    `json:"content"`
 	CreateAt time.Time `json:"created_at"`
 	Sender   string    `json:"sender"`
+	RoomID   int       `json:"room_id"`
 }
 
-func CreateMessage(content string, senderId int) (*Message, error) {
-	message := &Message{Content: content, SenderID: senderId}
+func CreateMessage(content string, senderId int, roomId int) (*Message, error) {
+	message := &Message{Content: content, SenderID: senderId, RoomID: roomId}
 
 	if content == "" {
 		return nil, errors.New("message content can't be null")
@@ -43,6 +45,7 @@ func (m *Message) ToSendFormat() (*MessageResponse, error) {
 		Content:  m.Content,
 		CreateAt: m.CreatedAt,
 		Sender:   sender.Username,
+		RoomID: m.RoomID,
 	}
 
 	return response, nil

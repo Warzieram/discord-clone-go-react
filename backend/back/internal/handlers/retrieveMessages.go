@@ -27,7 +27,14 @@ func (h *MessageHandlers) RetrieveMessages(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	messages, err := h.repo.GetLast(r.Context(), limit, offset)
+	roomID, roomErr := strconv.Atoi(r.URL.Query().Get("roomID"))
+	if roomErr != nil {
+		log.Println("[ERROR] while retrieving roomID: ", roomErr)
+		http.Error(w, "error parsing roomID parameter", http.StatusBadRequest)
+		return
+	}
+
+	messages, err := h.repo.GetLast(r.Context(), roomID, limit, offset)
 	if err != nil {
 		log.Println("[ERROR] Couldn't retrieve messages: ", err)
 		http.Error(w, "couldn't retrieve messages", http.StatusInternalServerError)

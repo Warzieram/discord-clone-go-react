@@ -54,6 +54,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/account-created" element={<VerifyEmail />} />
         <Route path="/chatroom" element={<ChatRoom />} />
+        <Route path="/chatroom/:roomId" element={<ChatRoom />} />
       </Routes>
     </BrowserRouter>
   );

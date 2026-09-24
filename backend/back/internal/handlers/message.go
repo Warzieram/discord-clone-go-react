@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
@@ -32,8 +33,9 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-var clients = make(map[*websocket.Conn]bool)
-var broadcast = make(chan []byte)
+// clients maps each active connection to the room it is connected to
+var clients = make(map[*websocket.Conn]int)
+var broadcast = make(chan roomBroadcast)
 var mutex = &sync.Mutex{}
 
 const IDLE_TIMEOUT = 1800
@@ -51,7 +53,7 @@ type Command struct {
 
 type Request interface {
 	GetType() CommandType
-	Execute(ctx context.Context, repo messagerepository.MessageRepository, userID int) error
+	Execute(ctx context.Context, repo messagerepository.MessageRepository, userID int, roomID int) error
 }
 
 type SendRequest struct {
@@ -79,9 +81,15 @@ type Broadcast[T BroadcastData] struct {
 	Data T           `json:"data"`
 }
 
-func (s SendRequest) Execute(ctx context.Context, repo messagerepository.MessageRepository, userID int) error {
+// roomBroadcast is a payload to send to every client connected to RoomID
+type roomBroadcast struct {
+	RoomID  int
+	Payload []byte
+}
+
+func (s SendRequest) Execute(ctx context.Context, repo messagerepository.MessageRepository, userID int, roomID int) error {
 	log.Println("Executing request: ", s)
-	m, err := message.CreateMessage(s.Data, userID)
+	m, err := message.CreateMessage(s.Data, userID, roomID)
 	if err != nil {
 		return err
 	}
@@ -117,12 +125,12 @@ func (s SendRequest) Execute(ctx context.Context, repo messagerepository.Message
 		return jsonErr
 	}
 
-	broadcast <- output
+	broadcast <- roomBroadcast{roomID, output}
 
 	return nil
 }
 
-func (r RemoveRequest) Execute(ctx context.Context, repo messagerepository.MessageRepository, userID int) error {
+func (r RemoveRequest) Execute(ctx context.Context, repo messagerepository.MessageRepository, userID int, roomID int) error {
 	log.Println("Executing request: ", r)
 
 	m, err := repo.GetByID(ctx, r.Data)
@@ -131,7 +139,7 @@ func (r RemoveRequest) Execute(ctx context.Context, repo messagerepository.Messa
 	}
 
 	//Proprietary check
-	if m.SenderID == userID {
+	if m.SenderID == userID && m.RoomID == roomID {
 		err = repo.MarkAsDeleted(ctx, r.Data)
 		if err != nil {
 			return err
@@ -145,7 +153,7 @@ func (r RemoveRequest) Execute(ctx context.Context, repo messagerepository.Messa
 			return err
 		}
 
-		broadcast <- []byte(output)
+		broadcast <- roomBroadcast{roomID, output}
 	}
 
 	return nil
@@ -187,6 +195,15 @@ func (h *MessageHandlers) MessageHandler(w http.ResponseWriter, r *http.Request)
 	// Echo back the client's requested subprotocol (e.g. "auth.<token>").
 	// Browsers fail the handshake if a subprotocol was offered but the server
 	// doesn't select one in the Sec-WebSocket-Protocol response header.
+	// We create a separate ws connection for each room
+	// Route: /message?roomID={roomID}
+
+	roomID, err := strconv.Atoi(r.URL.Query().Get("roomID"))
+	if err != nil {
+		http.Error(w, "missing or invalid room ID", http.StatusBadRequest)
+		return
+	}
+
 	var respHeader http.Header
 	if proto := r.Header.Get("Sec-WebSocket-Protocol"); proto != "" {
 		respHeader = http.Header{"Sec-WebSocket-Protocol": {proto}}
@@ -202,7 +219,7 @@ func (h *MessageHandlers) MessageHandler(w http.ResponseWriter, r *http.Request)
 
 	// set the connection in the list of active clients
 	mutex.Lock()
-	clients[conn] = true
+	clients[conn] = roomID
 	mutex.Unlock()
 
 	defer func() {
@@ -238,12 +255,13 @@ func (h *MessageHandlers) MessageHandler(w http.ResponseWriter, r *http.Request)
 		request, err := parseReq(input)
 		if err != nil {
 			log.Println("Error while parsing the request: ", err)
+			continue
 		}
 
 		userID := r.Context().Value("user_id").(int)
 		log.Println("User ID: ", userID)
 
-		err = request.Execute(r.Context(), h.repo, userID)
+		err = request.Execute(r.Context(), h.repo, userID, roomID)
 		if err != nil {
 			log.Println("ERROR while executing message request: ", err)
 			continue
@@ -255,13 +273,16 @@ func (h *MessageHandlers) MessageHandler(w http.ResponseWriter, r *http.Request)
 
 func SendMessage() {
 	for {
-		message := <-broadcast
+		b := <-broadcast
 
-		log.Println("sending message")
+		log.Println("sending message to room ", b.RoomID)
 
 		mutex.Lock()
-		for client := range clients {
-			err := client.WriteMessage(1, message)
+		for client, roomID := range clients {
+			if roomID != b.RoomID {
+				continue
+			}
+			err := client.WriteMessage(1, b.Payload)
 			if err != nil {
 				log.Println("ERROR writing mesage :", err)
 				delete(clients, client)

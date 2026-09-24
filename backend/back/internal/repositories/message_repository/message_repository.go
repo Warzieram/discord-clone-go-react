@@ -13,9 +13,9 @@ type MessageRepository interface {
 	Save(ctx context.Context, m *message.Message) (int, error)
 	// GetByID returns a single message by its id.
 	GetByID(ctx context.Context, id int) (*message.Message, error)
-	// GetLast returns up to `limit` non-deleted messages, newest first,
-	// skipping `offset` rows.
-	GetLast(ctx context.Context, limit int, offset int) ([]message.Message, error)
+	// GetLast returns up to `limit` non-deleted messages of a room, newest
+	// first, skipping `offset` rows.
+	GetLast(ctx context.Context, roomID int, limit int, offset int) ([]message.Message, error)
 	// MarkAsDeleted soft-deletes a message.
 	MarkAsDeleted(ctx context.Context, id int) error
 }
