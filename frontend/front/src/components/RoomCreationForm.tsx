@@ -2,6 +2,7 @@ import type { ChangeEventHandler, FormEvent } from "react";
 
 type RoomCreationFormProps = {
   onSubmit: (e: FormEvent<HTMLFormElement>) => Promise<void>;
+  onCancel: () => void;
   name: string;
   maxLength: number;
   onChange: ChangeEventHandler<HTMLInputElement>;
@@ -11,6 +12,7 @@ type RoomCreationFormProps = {
 const RoomCreationForm = ({
   onSubmit,
   onChange,
+  onCancel,
   name,
   maxLength,
   error,
@@ -25,9 +27,12 @@ const RoomCreationForm = ({
           maxLength={maxLength}
           onChange={onChange}
         />
-        <button type="submit" disabled={!name.trim()}>
-          Create
-        </button>
+        <div id="room-create-form-button-section">
+          <button type="submit" disabled={!name.trim()}>
+            Create
+          </button>
+          <button onClick={onCancel}>Cancel</button>
+        </div>
       </form>
       {error && <div className="room-error">{error}</div>}
     </>

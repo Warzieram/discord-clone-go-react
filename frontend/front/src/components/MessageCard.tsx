@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from "react";
+import UserAvatar from "./UserAvatar";
+import MessageMenu from "./MessageMenu";
 
 export type Message = {
   id?: number;
@@ -21,10 +23,7 @@ const MessageCard = ({
 }: MessageCardProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
-  const [avatarColor, setAvatarColor] = useState<string>()
-  const [initial, setInitial] = useState<string>()
   const menuRef = useRef<HTMLDivElement>(null);
-
 
   const date = new Date(message.created_at);
 
@@ -41,45 +40,15 @@ const MessageCard = ({
     minute: "2-digit",
   });
 
-  useEffect(() => {
-    const getAvatarColor = (username: string) => {
-      const colors = [
-        "#7289da",
-        "#99aab5",
-        "#f04747",
-        "#faa61a",
-        "#43b581",
-        "#9266cc",
-        "#e91e63",
-        "#00bcd4",
-        "#4caf50",
-        "#ff9800",
-        "#795548",
-        "#607d8b",
-      ];
-      let hash = 0;
-      for (let i = 0; i < username.length; i++) {
-        hash = username.charCodeAt(i) + ((hash << 5) - hash);
-      }
-      return colors[Math.abs(hash) % colors.length];
-    };
-
-    const color = getAvatarColor(message.sender);
-    setAvatarColor(color)
-    const userInitial = message.sender.charAt(0).toUpperCase();
-    setInitial(userInitial)
-
-  }, [message.sender]);
-
-    const handleDotsClick = (event: React.MouseEvent) => {
-      event.stopPropagation();
-      const rect = event.currentTarget.getBoundingClientRect();
-      setMenuPosition({
-        x: rect.right - 150,
-        y: rect.bottom + 5,
-      });
-      setIsMenuOpen(!isMenuOpen);
-    };
+  const handleDotsClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    const rect = event.currentTarget.getBoundingClientRect();
+    setMenuPosition({
+      x: rect.right - 150,
+      y: rect.bottom + 5,
+    });
+    setIsMenuOpen(!isMenuOpen);
+  };
   const handleDeleteMessage = () => {
     if (onDeleteMessage && message.id) {
       onDeleteMessage(message.id);
@@ -109,9 +78,7 @@ const MessageCard = ({
 
   return (
     <div className="discord-message" title={formattedFullDate}>
-      <div className="message-avatar" style={{ backgroundColor: avatarColor }}>
-        {initial}
-      </div>
+      <UserAvatar username={message.sender} />
       <div className="message-content-wrapper">
         <div className="message-header-inline">
           <span className="message-username">{message.sender}</span>
@@ -124,25 +91,14 @@ const MessageCard = ({
       </div>
 
       {isMenuOpen && (
-        <div
-          ref={menuRef}
-          className="message-context-menu"
-          style={{
-            position: "fixed",
-            left: menuPosition.x,
-            top: menuPosition.y,
-            zIndex: 1000,
-          }}
-        >
-          <div className="menu-item" onClick={handleCopyMessage}>
-            Copy Message
-          </div>
-          {currentUser === message.sender && (
-            <div className="menu-item delete" onClick={handleDeleteMessage}>
-              Delete Message
-            </div>
-          )}
-        </div>
+        <MessageMenu
+          message={message}
+          handleDeleteMessage={handleDeleteMessage}
+          menuPosition={menuPosition}
+          handleCopyMessage={handleCopyMessage}
+          menuRef={menuRef}
+          currentUser={currentUser || ""}
+        />
       )}
     </div>
   );

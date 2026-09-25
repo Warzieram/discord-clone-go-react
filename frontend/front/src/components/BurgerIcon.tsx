@@ -5,14 +5,18 @@ type BurgerIconProps = {
 
 const BurgerIcon = ({onClick}: BurgerIconProps) => {
   return (
+    <button
+      type="button"
+      id="burger-icon"
+      aria-label="Toggle menu"
+      onClick={() => onClick()}
+    >
       <svg
         width="24"
         height="24"
         viewBox="0 0 24 24"
         fill="none"
         aria-hidden
-        id="burger-icon"
-        onClick={() => onClick()}
       >
           <path
             d="M4 7H20"
@@ -33,6 +37,7 @@ const BurgerIcon = ({onClick}: BurgerIconProps) => {
             strokeLinecap="round"
           />
       </svg>
+    </button>
 )
 }
 

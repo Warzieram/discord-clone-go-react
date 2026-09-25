@@ -3,6 +3,9 @@ import { NavLink } from "react-router-dom";
 import type { Room } from "../services/roomService";
 import BurgerIcon from "./BurgerIcon";
 import RoomCreationForm from "./RoomCreationForm";
+import UserAvatar from "./UserAvatar";
+import { useSelector } from "react-redux";
+import type { RootState } from "../store/store";
 
 const MAX_ROOM_NAME_LENGTH = 20;
 
@@ -15,6 +18,8 @@ const RoomList = ({ rooms, onCreateRoom }: RoomListProps) => {
   const [name, setName] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [hidden, setHidden] = useState<boolean>(false);
+  const [createFormHidden, setCreateFormHidden] = useState<boolean>(true);
+  const username = useSelector((state: RootState) => state.user.user?.username);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -48,14 +53,23 @@ const RoomList = ({ rooms, onCreateRoom }: RoomListProps) => {
               </NavLink>
             </li>
           ))}
+          <li>
+            <button id="create-room-button" onClick={() => setCreateFormHidden(false)}>+</button>
+          </li>
         </ul>
-        <RoomCreationForm
-          onSubmit={handleSubmit}
-          onChange={(e) => setName(e.target.value)}
-          error={error}
-          name={name}
-          maxLength={MAX_ROOM_NAME_LENGTH}
-        />
+        {!createFormHidden ? (
+          <RoomCreationForm
+            onSubmit={handleSubmit}
+            onChange={(e) => setName(e.target.value)}
+            onCancel={() => setCreateFormHidden(true)}
+            error={error}
+            name={name}
+            maxLength={MAX_ROOM_NAME_LENGTH}
+          />
+        ) : (
+          ""
+        )}
+        <UserAvatar username={username || ""} />
       </nav>
     );
   } else {

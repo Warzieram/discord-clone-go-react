@@ -196,7 +196,7 @@ const ChatRoom = () => {
               placeholder={`Message #${currentRoom.name}`}
               autoFocus={true}
             ></input>
-            <button type="submit" onClick={sendMessage}>
+            <button className="send-button" type="submit" onClick={sendMessage}>
               Send
             </button>
           </div>
