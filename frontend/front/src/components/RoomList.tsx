@@ -76,7 +76,10 @@ const RoomList = ({ rooms, onCreateRoom }: RoomListProps) => {
           ""
         )}
         <NavLink to="/">
-          <UserAvatar username={username || ""} />
+          <div id="profile-section-sidebar">
+            <UserAvatar username={username || ""} />
+            <p>{username}</p>
+          </div>
         </NavLink>
       </nav>
     );

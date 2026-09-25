@@ -317,3 +317,18 @@ input {
   min-height: 0;
   width: 100%;
 }
+
+#profile-section-sidebar {
+  display: flex;
+  color: white;
+  font-weight: 650;
+  font-size: 25px;
+  align-items: center;
+  padding: 5px;
+  max-height: 40px;
+}
+
+#profile-section-sidebar:hover{
+  background-color: #444;
+
+}
