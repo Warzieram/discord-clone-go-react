@@ -1,14 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import UserAvatar from "./UserAvatar";
 import MessageMenu from "./MessageMenu";
-
-export type Message = {
-  id?: number;
-  sender: string;
-  created_at: string;
-  content: string;
-  room_id?: number;
-};
+import type { Message } from "../types";
 
 type MessageCardProps = {
   message: Message;

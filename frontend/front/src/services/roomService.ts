@@ -1,10 +1,5 @@
 import { BACKEND_URL } from "../constants";
 
-export type Room = {
-  id: number;
-  name: string;
-};
-
 const getRooms = async (token: string) => {
   const res = await fetch(`${BACKEND_URL}/api/rooms`, {
     headers: {

@@ -1,10 +1,4 @@
-import type { Message } from "../components/MessageCard";
 import { BACKEND_URL, WS_BACKEND_URL } from "../constants";
-
-export type BroadcastedMessage = {
-  command_type: string;
-  data: Message | number;
-};
 
 const getLastMessages = async (
   token: string,

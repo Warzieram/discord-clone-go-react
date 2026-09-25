@@ -3,7 +3,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   height: 100%;
 }
 
@@ -279,44 +280,40 @@ input {
 }
 
 #burger-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 5px;
   margin: 5px;
+  min-height: 0;
   height: 35px;
   width: 35px;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-}
-
-#burger-icon:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-#burger-icon:active {
-  background-color: rgba(255, 255, 255, 0.18);
-}
-
-#burger-icon:focus-visible {
-  outline: 2px solid #5865f2;
-  outline-offset: 2px;
 }
 
 #create-room-button {
   width: 100%;
   margin-top: 10px;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 #room-create-form-button-section {
   display: flex;
-  justify-content: space-around;
+  gap: 8px;
+}
+
+#room-create-form-button-section button {
+  flex: 1;
 }
 
 .send-button {
-  background-color: #718693;
   flex-shrink: 0;
+  padding: 8px 20px;
+}
+
+.center-wrapper {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
 }

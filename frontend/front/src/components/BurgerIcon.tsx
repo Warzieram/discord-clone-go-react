@@ -1,13 +1,13 @@
 type BurgerIconProps = {
-  onClick: () => void
-}
-
+  onClick: () => void;
+};
 
 const BurgerIcon = ({onClick}: BurgerIconProps) => {
   return (
     <button
       type="button"
       id="burger-icon"
+      className="btn-ghost"
       aria-label="Toggle menu"
       onClick={() => onClick()}
     >
@@ -20,19 +20,19 @@ const BurgerIcon = ({onClick}: BurgerIconProps) => {
       >
           <path
             d="M4 7H20"
-            stroke="white"
+            stroke="currentColor"
             strokeWidth="2"
             strokeLinecap="round"
           />
           <path
             d="M4 12H20"
-            stroke="white"
+            stroke="currentColor"
             strokeWidth="2"
             strokeLinecap="round"
           />
           <path
             d="M4 17H20"
-            stroke="white"
+            stroke="currentColor"
             strokeWidth="2"
             strokeLinecap="round"
           />

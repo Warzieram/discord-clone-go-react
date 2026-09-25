@@ -1,5 +1,5 @@
 import type { RefObject } from "react";
-import type { Message } from "./MessageCard";
+import type { Message } from "../types";
 
 type MessageMenuProps = {
   menuRef: RefObject<HTMLDivElement | null>;

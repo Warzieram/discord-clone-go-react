@@ -31,7 +31,9 @@ const RoomCreationForm = ({
           <button type="submit" disabled={!name.trim()}>
             Create
           </button>
-          <button onClick={onCancel}>Cancel</button>
+          <button className="btn-secondary" onClick={onCancel}>
+            Cancel
+          </button>
         </div>
       </form>
       {error && <div className="room-error">{error}</div>}

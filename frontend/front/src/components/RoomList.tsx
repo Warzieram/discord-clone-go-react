@@ -1,18 +1,18 @@
 import { useState, type FormEvent } from "react";
 import { NavLink } from "react-router-dom";
-import type { Room } from "../services/roomService";
 import BurgerIcon from "./BurgerIcon";
 import RoomCreationForm from "./RoomCreationForm";
 import UserAvatar from "./UserAvatar";
 import { useSelector } from "react-redux";
 import type { RootState } from "../store/store";
-
-const MAX_ROOM_NAME_LENGTH = 20;
+import type { Room } from "../types";
 
 type RoomListProps = {
   rooms: Array<Room>;
   onCreateRoom: (name: string) => Promise<void>;
 };
+
+const MAX_ROOM_NAME_LENGTH = 20;
 
 const RoomList = ({ rooms, onCreateRoom }: RoomListProps) => {
   const [name, setName] = useState<string>("");
@@ -33,6 +33,7 @@ const RoomList = ({ rooms, onCreateRoom }: RoomListProps) => {
     } catch (error) {
       setError((error as Error).message);
     }
+    setCreateFormHidden(true);
   };
 
   if (!hidden) {
@@ -54,7 +55,12 @@ const RoomList = ({ rooms, onCreateRoom }: RoomListProps) => {
             </li>
           ))}
           <li>
-            <button id="create-room-button" onClick={() => setCreateFormHidden(false)}>+</button>
+            <button
+              id="create-room-button"
+              onClick={() => setCreateFormHidden(false)}
+            >
+              +
+            </button>
           </li>
         </ul>
         {!createFormHidden ? (
@@ -69,7 +75,9 @@ const RoomList = ({ rooms, onCreateRoom }: RoomListProps) => {
         ) : (
           ""
         )}
-        <UserAvatar username={username || ""} />
+        <NavLink to="/">
+          <UserAvatar username={username || ""} />
+        </NavLink>
       </nav>
     );
   } else {
