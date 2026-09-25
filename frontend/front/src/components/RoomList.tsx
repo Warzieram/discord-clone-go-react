@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { NavLink } from "react-router-dom";
 import type { Room } from "../services/roomService";
+import BurgerIcon from "./BurgerIcon";
+import RoomCreationForm from "./RoomCreationForm";
 
 const MAX_ROOM_NAME_LENGTH = 20;
 
@@ -12,6 +14,7 @@ type RoomListProps = {
 const RoomList = ({ rooms, onCreateRoom }: RoomListProps) => {
   const [name, setName] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
+  const [hidden, setHidden] = useState<boolean>(false);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -27,38 +30,37 @@ const RoomList = ({ rooms, onCreateRoom }: RoomListProps) => {
     }
   };
 
-  return (
-    <nav className="room-sidebar">
-      <div className="room-sidebar-title">Rooms</div>
-      <ul className="room-list">
-        {rooms.map((room) => (
-          <li key={room.id}>
-            <NavLink
-              to={`/chatroom/${room.id}`}
-              className={({ isActive }) =>
-                isActive ? "room-link active" : "room-link"
-              }
-            >
-              # {room.name}
-            </NavLink>
-          </li>
-        ))}
-      </ul>
-      <form className="room-create-form" onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="New room"
-          value={name}
-          maxLength={MAX_ROOM_NAME_LENGTH}
+  if (!hidden) {
+    return (
+      <nav className="room-sidebar">
+        <BurgerIcon onClick={() => setHidden(true)} />
+        <div className="room-sidebar-title">Rooms</div>
+        <ul className="room-list">
+          {rooms.map((room) => (
+            <li key={room.id}>
+              <NavLink
+                to={`/chatroom/${room.id}`}
+                className={({ isActive }) =>
+                  isActive ? "room-link active" : "room-link"
+                }
+              >
+                # {room.name}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+        <RoomCreationForm
+          onSubmit={handleSubmit}
           onChange={(e) => setName(e.target.value)}
+          error={error}
+          name={name}
+          maxLength={MAX_ROOM_NAME_LENGTH}
         />
-        <button type="submit" disabled={!name.trim()}>
-          Create
-        </button>
-      </form>
-      {error && <div className="room-error">{error}</div>}
-    </nav>
-  );
+      </nav>
+    );
+  } else {
+    return <BurgerIcon onClick={() => setHidden(false)} />;
+  }
 };
 
 export default RoomList;

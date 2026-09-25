@@ -266,3 +266,10 @@ input {
   margin-right: 8px;
   font-size: 16px;
 }
+
+#burger-icon {
+  padding: 5px;
+  margin: 5;
+  height: 25px;
+  width: 25px;
+}
