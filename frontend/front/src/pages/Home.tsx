@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { clearToken, logout, type RootState } from "../store/store";
 import { parseISO } from "date-fns";
 import RedirectionButton from "../components/RedirectionButton";
-
+import UserAvatar from "../components/UserAvatar";
 
 const Home = () => {
   const user = useSelector((state: RootState) => state.user.user);
@@ -40,15 +40,21 @@ const Home = () => {
     );
 
   return (
-    <>
+    <div className="center-wrapper">
+      <UserAvatar username={user.username || ""} />
       <h2>Profil utilisateur</h2>
       <p>Email: {user.email}</p>
+      <p>Username: {user.username}</p>
       <p>Created on: {creationDate}</p>
-      <button onClick={handleLogout}>Logout</button>
-      <RedirectionButton to="/chatroom" variation="light">
-        Chat
-      </RedirectionButton>
-    </>
+      <div id="room-create-form-button-section">
+        <button className="btn-danger" onClick={handleLogout}>
+          Logout
+        </button>
+        <RedirectionButton to="/chatroom" variation="light">
+          Chat
+        </RedirectionButton>
+      </div>
+    </div>
   );
 };
 

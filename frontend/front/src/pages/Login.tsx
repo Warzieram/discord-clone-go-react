@@ -1,14 +1,10 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setToken, setUser, type RootState, type User } from "../store/store";
-import LoginForm, { type LoginFormReturn } from "../components/LoginForm";
+import { setToken, setUser, type RootState } from "../store/store";
+import LoginForm from "../components/LoginForm";
 import { useNavigate } from "react-router-dom";
 import { login } from "../services/authService";
-
-type LoginApiResponseType = {
-  token: string;
-  user: User;
-};
+import type { AuthApiResponse, LoginFormReturn } from "../types";
 
 const Login = () => {
   const [error, setError] = useState<string>();
@@ -30,7 +26,7 @@ const Login = () => {
         throw new Error(await response.text());
       }
 
-      const json = (await response.json()) as LoginApiResponseType;
+      const json = (await response.json()) as AuthApiResponse;
 
       dispatch(setToken(json.token));
       dispatch(setUser(json.user));

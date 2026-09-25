@@ -1,15 +1,5 @@
 import { configureStore, createSlice } from "@reduxjs/toolkit";
-
-export type User = {
-  id: number | undefined;
-  email: string | undefined;
-  created_at: string | undefined;
-  username : string | undefined
-};
-
-type UserState = {
-  user: User | undefined;
-};
+import type { TokenState, UserState } from "../types";
 
 const initialUserState: UserState = {
   user: undefined,
@@ -28,9 +18,6 @@ const userSlice = createSlice({
   },
 });
 
-type TokenState = {
-  token: string | null
-}
 const initialTokenState: TokenState = {
   token: localStorage.getItem("JWT")
 }

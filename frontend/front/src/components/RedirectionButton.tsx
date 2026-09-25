@@ -6,6 +6,7 @@ type RedirectionButtonProps = {
   variation: "light" | "dark",
   children: ReactNode
 }
+
 const RedirectionButton = (props: RedirectionButtonProps) => {
   const navigate = useNavigate()
   return (

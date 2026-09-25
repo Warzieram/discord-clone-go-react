@@ -3,7 +3,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   height: 100%;
 }
 
@@ -40,6 +41,7 @@ input {
 
 .message-avatar {
   width: 40px;
+  cursor: pointer;
   height: 40px;
   border-radius: 50%;
   display: flex;
@@ -92,7 +94,9 @@ input {
   font-weight: bold;
   font-size: 16px;
   color: #a3a6aa;
-  transition: opacity 0.1s ease, background-color 0.1s ease;
+  transition:
+    opacity 0.1s ease,
+    background-color 0.1s ease;
   user-select: none;
 }
 
@@ -114,15 +118,18 @@ input {
 }
 
 .message-input {
-  width: 100%;
-  margin-right: 25px;
-  margin-left: 25px;
+  flex: 1;
+  min-width: 0;
+  margin: 0;
 }
 
 .message-input-form {
   width: 100%;
   display: flex;
   flex-direction: row;
+  gap: 25px;
+  padding: 0 25px;
+  box-sizing: border-box;
 }
 
 .message-form {
@@ -187,7 +194,11 @@ input {
 }
 
 .room-create-form input {
-  margin: 8px 0;
+  margin: 8px 0px 8px 0px;
+}
+
+.room-create-form {
+  margin: 8px 0px 8px 0px;
 }
 
 .room-error,
@@ -237,6 +248,7 @@ input {
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -265,4 +277,58 @@ input {
 .menu-icon {
   margin-right: 8px;
   font-size: 16px;
+}
+
+#burger-icon {
+  padding: 5px;
+  margin: 5px;
+  min-height: 0;
+  height: 35px;
+  width: 35px;
+}
+
+#create-room-button {
+  width: 100%;
+  margin-top: 10px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+#room-create-form-button-section {
+  display: flex;
+  gap: 8px;
+}
+
+#room-create-form-button-section button {
+  flex: 1;
+}
+
+.send-button {
+  flex-shrink: 0;
+  padding: 8px 20px;
+}
+
+.center-wrapper {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+#profile-section-sidebar {
+  display: flex;
+  color: white;
+  font-weight: 650;
+  font-size: 25px;
+  align-items: center;
+  padding: 5px;
+  max-height: 40px;
+}
+
+#profile-section-sidebar:hover{
+  background-color: #444;
+
 }

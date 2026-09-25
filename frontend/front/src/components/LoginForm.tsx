@@ -4,14 +4,10 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
+import type { LoginFormReturn } from "../types";
 
 type LoginFormProps = {
   callback: (args: LoginFormReturn) => Promise<void>;
-};
-
-export type LoginFormReturn = {
-  email: string;
-  password: string;
 };
 
 function LoginForm({ callback }: LoginFormProps) {

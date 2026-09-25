@@ -1,20 +1,10 @@
 import { useDispatch, useSelector } from "react-redux";
-import { setUser, type RootState, type User } from "../store/store";
+import { setUser, type RootState } from "../store/store";
 import { useEffect, useState } from "react";
 import RegisterForm from "../components/RegisterForm";
 import { useNavigate } from "react-router-dom";
 import { regsiter } from "../services/authService";
-
-type RegisterResponseApiType = {
-  token: string;
-  user: User;
-};
-
-type RegisterFormReturn = {
-  email: string;
-  password: string;
-  username: string;
-};
+import type { AuthApiResponse, RegisterFormReturn } from "../types";
 
 const Register = () => {
   const token = useSelector((state: RootState) => state.token.token);
@@ -39,7 +29,7 @@ const Register = () => {
         throw new Error(await response.text());
       }
 
-      const json = (await response.json()) as RegisterResponseApiType;
+      const json = (await response.json()) as AuthApiResponse;
       console.log(json);
 
       dispatch(setUser(json.user));

@@ -8,7 +8,6 @@ import {
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import type { RootState } from "../store/store";
-import type { Message } from "../components/MessageCard";
 import MessageCard from "../components/MessageCard";
 import RoomList from "../components/RoomList";
 import {
@@ -16,9 +15,9 @@ import {
   getLastMessages,
   sendDeleteRequest,
   sendMessageWS,
-  type BroadcastedMessage,
 } from "../services/messageService";
-import { createRoom, getRooms, type Room } from "../services/roomService";
+import { createRoom, getRooms } from "../services/roomService";
+import type { BroadcastedMessage, Message, Room } from "../types";
 
 const ChatRoom = () => {
   const [messages, setMessages] = useState<Array<Message>>([]);
@@ -196,7 +195,7 @@ const ChatRoom = () => {
               placeholder={`Message #${currentRoom.name}`}
               autoFocus={true}
             ></input>
-            <button type="submit" onClick={sendMessage}>
+            <button className="send-button" type="submit" onClick={sendMessage}>
               Send
             </button>
           </div>

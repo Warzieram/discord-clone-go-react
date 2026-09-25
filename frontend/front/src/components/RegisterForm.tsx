@@ -4,15 +4,10 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
+import type { RegisterFormReturn } from "../types";
 
 type RegisterFormProps = {
   callback: (args: RegisterFormReturn) => Promise<void>;
-};
-
-export type RegisterFormReturn = {
-  email: string;
-  password: string;
-  username: string;
 };
 
 const RegisterForm = ({ callback }: RegisterFormProps) => {
