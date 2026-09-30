@@ -24,46 +24,53 @@ const RegisterForm = ({ callback }: RegisterFormProps) => {
   };
 
   return (
-    <div className="form-card">
-      <form>
+    <form
+      className="auth-form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        callback({ email: email, password: password, username: username });
+      }}
+    >
+      <div className="form-field">
         <label htmlFor="username">Username</label>
         <input
           type="text"
           name="username"
           id="username"
+          autoComplete="username"
           onChange={(e) => handleChange(e, setUsername)}
           placeholder="Example123"
         />
+      </div>
+
+      <div className="form-field">
         <label htmlFor="email">Email</label>
         <input
-          type="text"
+          type="email"
           name="email"
           id="email"
+          autoComplete="email"
           onChange={(e) => handleChange(e, setEmail)}
           placeholder="example@thing.com"
         />
-        <label htmlFor="password">Password</label>
+      </div>
+
+      <div className="form-field">
+        <label htmlFor="password">Mot de passe</label>
         <input
           type="password"
           name="password"
           id="password"
-          onChange={(e) => {
-            handleChange(e, setPassword);
-          }}
-          placeholder="example@thing.com"
+          autoComplete="new-password"
+          onChange={(e) => handleChange(e, setPassword)}
+          placeholder="••••••••"
         />
-      <button
-        onClick={(e) => {
-          e.preventDefault()
-          callback({ email: email, password: password, username: username });
-        }}
-          type="submit"
-      >
-        {" "}
-        S'inscrire{" "}
+      </div>
+
+      <button type="submit" className="auth-submit">
+        S'inscrire
       </button>
-      </form>
-    </div>
+    </form>
   );
 };
 
