@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setUser, type RootState } from "../store/store";
 import { useEffect, useState } from "react";
 import RegisterForm from "../components/RegisterForm";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { regsiter } from "../services/authService";
 import type { AuthApiResponse, RegisterFormReturn } from "../types";
 
@@ -42,11 +42,20 @@ const Register = () => {
   };
 
   return (
-    <>
-      <h2>Register</h2>
-      <RegisterForm callback={handleRegister} />
-      {error}
-    </>
+    <div className="auth-page">
+      <div className="form-card">
+        <h2 className="auth-title">Créer un compte</h2>
+        <p className="auth-subtitle">Rejoins la conversation en un instant</p>
+
+        <RegisterForm callback={handleRegister} />
+
+        {error && <p className="auth-error">{error}</p>}
+
+        <p className="auth-switch">
+          Déjà un compte ? <Link to="/login">Se connecter</Link>
+        </p>
+      </div>
+    </div>
   );
 };
 

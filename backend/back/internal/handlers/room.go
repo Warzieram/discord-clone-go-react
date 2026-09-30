@@ -29,7 +29,7 @@ func (h *RoomHandlers) CreateRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rm, err := room.CreateRoom(req.Name)
+	rm, err := room.CreateRoom(req.Name, r.Context().Value("user_id").(int))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

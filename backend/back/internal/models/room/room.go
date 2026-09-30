@@ -12,9 +12,10 @@ const MAX_NAME_LENGTH = 20
 type Room struct {
 	Id   int    `json:"id"`
 	Name string `json:"name"`
+	CreatorID int `json:"creator_id"`
 }
 
-func CreateRoom(name string) (*Room, error) {
+func CreateRoom(name string, creator_id int) (*Room, error) {
 	name = strings.TrimSpace(name)
 
 	if name == "" {
@@ -24,5 +25,9 @@ func CreateRoom(name string) (*Room, error) {
 		return nil, errors.New("room name is too long")
 	}
 
-	return &Room{Name: name}, nil
+	if creator_id < 1{
+		return nil, errors.New("Invalid user Id for creator")
+	}
+
+	return &Room{Name: name, CreatorID: creator_id}, nil
 }

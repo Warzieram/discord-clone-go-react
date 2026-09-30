@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setToken, setUser, type RootState } from "../store/store";
 import LoginForm from "../components/LoginForm";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { login } from "../services/authService";
 import type { AuthApiResponse, LoginFormReturn } from "../types";
 
@@ -38,11 +38,22 @@ const Login = () => {
   };
 
   return (
-    <>
-      <h2>Log In</h2>
-      <LoginForm callback={handleLogin} />
-      <p>{error}</p>
-    </>
+    <div className="auth-page">
+      <div className="form-card">
+        <h2 className="auth-title">Content de te revoir !</h2>
+        <p className="auth-subtitle">
+          On est ravis de te revoir parmi nous
+        </p>
+
+        <LoginForm callback={handleLogin} />
+
+        {error && <p className="auth-error">{error}</p>}
+
+        <p className="auth-switch">
+          Pas encore de compte ? <Link to="/register">S'inscrire</Link>
+        </p>
+      </div>
+    </div>
   );
 };
 

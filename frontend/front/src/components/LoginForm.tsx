@@ -23,39 +23,41 @@ function LoginForm({ callback }: LoginFormProps) {
   };
 
   return (
-    <div className="form-card">
-      <form>
+    <form
+      className="auth-form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        callback({ email: email, password: password });
+      }}
+    >
+      <div className="form-field">
         <label htmlFor="email">Email</label>
         <input
-          type="text"
+          type="email"
           name="email"
           id="email"
+          autoComplete="email"
           onChange={(e) => handleChange(e, setEmail)}
           placeholder="example@thing.com"
         />
-        <label htmlFor="password">Password</label>
+      </div>
+
+      <div className="form-field">
+        <label htmlFor="password">Mot de passe</label>
         <input
           type="password"
           name="password"
           id="password"
-          onChange={(e) => {
-            handleChange(e, setPassword);
-          }}
-          placeholder="example@thing.com"
+          autoComplete="current-password"
+          onChange={(e) => handleChange(e, setPassword)}
+          placeholder="••••••••"
         />
+      </div>
 
-        <button
-          type="submit"
-          onClick={(e) => {
-            e.preventDefault()
-            callback({ email: email, password: password });
-          }}
-        >
-          {" "}
-          Se Connecter{" "}
-        </button>
-      </form>
-    </div>
+      <button type="submit" className="auth-submit">
+        Se Connecter
+      </button>
+    </form>
   );
 }
 
