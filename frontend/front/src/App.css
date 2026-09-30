@@ -315,10 +315,26 @@ input {
   display: flex;
   color: white;
   font-weight: 650;
-  font-size: 25px;
   align-items: center;
   padding: 5px;
   max-height: 40px;
+}
+
+/* Shrink the username as it gets longer: 25px up to 10 characters, then 1px
+   per extra character down to a 13px floor at 22. --username-length is set
+   inline by RoomList; past the floor the name ellipsises. */
+.profile-username {
+  margin: 0;
+  font-size: clamp(
+    13px,
+    calc(25px - (var(--username-length, 0) - 10) * 1px),
+    25px
+  );
+  line-height: 1.2;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 #profile-section-sidebar:hover{

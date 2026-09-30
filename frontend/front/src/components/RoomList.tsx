@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, type CSSProperties, type FormEvent } from "react";
 import { NavLink } from "react-router-dom";
 import BurgerIcon from "./BurgerIcon";
 import RoomCreationForm from "./RoomCreationForm";
@@ -76,9 +76,14 @@ const RoomList = ({ rooms, onCreateRoom }: RoomListProps) => {
           ""
         )}
         <NavLink to="/">
-          <div id="profile-section-sidebar">
+          <div
+            id="profile-section-sidebar"
+            style={
+              { "--username-length": username?.length ?? 0 } as CSSProperties
+            }
+          >
             <UserAvatar username={username || ""} />
-            <p>{username}</p>
+            <p className="profile-username">{username}</p>
           </div>
         </NavLink>
       </nav>
