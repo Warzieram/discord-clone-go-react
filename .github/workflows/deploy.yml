@@ -1,8 +1,10 @@
 # Builds the backend and frontend images, pushes them to the private registry,
 # then deploys by running deploy.sh over SSH on the VPS.
 #
-# Everything below reads from the "production" GitHub environment
-# (Settings -> Environments -> production), so add these there:
+# Everything below reads from the "DEPLOY-BUILD" GitHub environment
+# (Settings -> Environments -> DEPLOY-BUILD), so add these there. A value put on
+# a different environment, or added as a Secret where a Variable is expected,
+# reads as empty here.
 #
 #   Secrets
 #     REGISTRY_USERNAME   login for registry.lucramassamy.fr
@@ -17,9 +19,12 @@
 #                         man-in-the-middle from receiving the deploy key.
 #
 #   Variables
-#     VITE_BACKEND_URL    public API base URL, e.g. https://api.lucramassamy.fr
-#                         A variable rather than a secret because Vite bakes it
-#                         into the static bundle, where it is public anyway.
+#     VITE_BACKEND_URL    public API base URL, WITH scheme and no trailing
+#                         slash, e.g. https://discord-api.lucramassamy.fr
+#                         A Variable rather than a Secret because Vite bakes it
+#                         into the static bundle, where it is public anyway --
+#                         and because a Secret would be masked in the build log
+#                         and unreadable by the check step below.
 #     SSH_PORT            optional, defaults to 22
 
 name: Build and Deploy
@@ -80,14 +85,23 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Check VITE_BACKEND_URL is set
-        # Vite bakes this into the bundle, so an empty value silently ships a
-        # frontend that falls back to its own origin for API calls. Fail loudly
-        # here instead of shipping a broken build.
+        # Vite bakes this into the bundle at build time. If it is empty,
+        # constants.ts falls back to window.location.origin, so every /api call
+        # goes to the SPA's own nginx -- which has no /api location and answers
+        # 405 Not Allowed to any POST (e.g. login). Fail loudly here instead.
+        # Read via env, not inline expansion, so the value can't inject shell.
+        env:
+          VITE_BACKEND_URL: ${{ vars.VITE_BACKEND_URL }}
         run: |
-          if [ -z "${{ vars.VITE_BACKEND_URL }}" ]; then
-            echo "::error::VITE_BACKEND_URL is not set on the production environment"
+          if [ -z "$VITE_BACKEND_URL" ]; then
+            echo "::error::VITE_BACKEND_URL is empty. Set it as a Variable (not a Secret) on the DEPLOY-BUILD environment."
             exit 1
           fi
+          case "$VITE_BACKEND_URL" in
+            http://*|https://*) ;;
+            *) echo "::error::VITE_BACKEND_URL must include the scheme, got '$VITE_BACKEND_URL'"; exit 1 ;;
+          esac
+          echo "Building the frontend against $VITE_BACKEND_URL"
 
       - uses: docker/setup-buildx-action@v3
 
@@ -111,6 +125,23 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,mode=max,scope=frontend
+
+      - name: Verify the API URL is in the built bundle
+        # The build arg can be silently dropped (wrong ARG name, cache reuse,
+        # Dockerfile drift) and the result still builds fine -- it just ships a
+        # frontend that calls the wrong host. Assert on the artifact itself.
+        env:
+          VITE_BACKEND_URL: ${{ vars.VITE_BACKEND_URL }}
+          IMAGE: ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+        run: |
+          docker pull "$IMAGE"
+          if docker run --rm --entrypoint sh "$IMAGE" -c \
+               "grep -rqF '$VITE_BACKEND_URL' /usr/share/nginx/html/assets/"; then
+            echo "OK: $VITE_BACKEND_URL is baked into the bundle"
+          else
+            echo "::error::$VITE_BACKEND_URL is NOT in the built bundle -- the frontend would fall back to its own origin and get 405 on /api POSTs"
+            exit 1
+          fi
 
   deploy:
     name: Deploy to VPS
