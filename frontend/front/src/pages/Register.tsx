@@ -3,7 +3,7 @@ import { setUser, type RootState } from "../store/store";
 import { useEffect, useState } from "react";
 import RegisterForm from "../components/RegisterForm";
 import { Link, useNavigate } from "react-router-dom";
-import { regsiter } from "../services/authService";
+import { register } from "../services/authService";
 import type { AuthApiResponse, RegisterFormReturn } from "../types";
 
 const Register = () => {
@@ -24,7 +24,7 @@ const Register = () => {
     username,
   }: RegisterFormReturn) => {
     try {
-      const response = await regsiter(email, password, username);
+      const response = await register(email, password, username);
       if (!response.ok) {
         throw new Error(await response.text());
       }

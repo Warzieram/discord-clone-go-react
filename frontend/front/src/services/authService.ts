@@ -1,6 +1,6 @@
 import { BACKEND_URL } from "../constants";
 
-const regsiter = async (email: string, password: string, username: string) => {
+const register = async (email: string, password: string, username: string) => {
   const response = await fetch(`${BACKEND_URL}/api/register`, {
     method: "post",
     headers: {
@@ -31,4 +31,4 @@ const login = async (email: string, password: string) => {
   return response;
 };
 
-export { regsiter, login };
+export { register, login };
