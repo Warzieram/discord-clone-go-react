@@ -4,9 +4,11 @@ import { clearToken, logout, type RootState } from "../store/store";
 import { parseISO } from "date-fns";
 import RedirectionButton from "../components/RedirectionButton";
 import UserAvatar from "../components/UserAvatar";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const user = useSelector((state: RootState) => state.user.user);
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const [creationDate, setCreationDate] = useState<string>();
 
@@ -27,17 +29,10 @@ const Home = () => {
     }
   }, [user]);
 
-  if (!user)
-    return (
-      <>
-        <RedirectionButton to="/login" variation="dark">
-          Login
-        </RedirectionButton>
-        <RedirectionButton to="/register" variation="light">
-          Register
-        </RedirectionButton>
-      </>
-    );
+  if (!user) {
+    navigate("/login", {replace: true});
+    return
+  }
 
   return (
     <div className="center-wrapper">
