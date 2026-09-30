@@ -18,4 +18,6 @@ type MessageRepository interface {
 	GetLast(ctx context.Context, roomID int, limit int, offset int) ([]message.Message, error)
 	// MarkAsDeleted soft-deletes a message.
 	MarkAsDeleted(ctx context.Context, id int) error
+	// UpdateContent replaces a message's content and flags it as edited.
+	UpdateContent(ctx context.Context, id int, content string) error
 }

@@ -4,6 +4,7 @@ export type Message = {
   created_at: string;
   content: string;
   room_id?: number;
+  edited?: boolean;
 };
 
 export type BroadcastedMessage = {

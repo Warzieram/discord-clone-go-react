@@ -3,7 +3,8 @@ import {
   useRef,
   useState,
   type ChangeEvent,
-  type MouseEventHandler,
+  type FormEventHandler,
+  type KeyboardEvent,
 } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
@@ -15,6 +16,7 @@ import {
   getLastMessages,
   sendDeleteRequest,
   sendMessageWS,
+  sendModifyRequest,
 } from "../services/messageService";
 import { createRoom, getRooms } from "../services/roomService";
 import type { BroadcastedMessage, Message, Room } from "../types";
@@ -24,11 +26,14 @@ const ChatRoom = () => {
   const [rooms, setRooms] = useState<Array<Room>>([]);
   const [roomsLoaded, setRoomsLoaded] = useState<boolean>(false);
   const [input, setInput] = useState<string>("");
+  // Non-null means we're editing that message rather than composing a new one
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const token = useSelector((state: RootState) => state.token.token);
   const navigate = useNavigate();
   const username = useSelector((state: RootState) => state.user.user?.username);
   const ws = useRef<WebSocket | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const { roomId: roomIdParam } = useParams();
   const roomId = roomIdParam ? Number(roomIdParam) : undefined;
@@ -36,6 +41,24 @@ const ChatRoom = () => {
 
   const handleType = (e: ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
+  };
+
+  const startEdit = (message: Message) => {
+    setEditingId(message.id ?? null);
+    setInput(message.content);
+    inputRef.current?.focus();
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setInput("");
+  };
+
+  const handleInputKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Escape" && editingId !== null) {
+      e.preventDefault();
+      cancelEdit();
+    }
   };
 
   // Load the room list once
@@ -81,9 +104,12 @@ const ChatRoom = () => {
     let stale = false;
     setMessages([]);
     setError(null);
+    setEditingId(null);
+    setInput("");
 
     const deleteMessageFromList = (id: number) => {
       setMessages((prev) => prev.filter((m) => m.id !== id));
+      setEditingId((cur) => (cur === id ? null : cur));
     };
 
     const retrieveMessages = async () => {
@@ -128,6 +154,11 @@ const ChatRoom = () => {
         deleteMessageFromList(data.data as number);
       } else if (data.command_type === "SEND") {
         setMessages((old) => [...old, data.data as Message]);
+      } else if (data.command_type === "MODIFY") {
+        const edited = data.data as Message;
+        setMessages((old) =>
+          old.map((m) => (m.id === edited.id ? edited : m)),
+        );
       }
     });
 
@@ -143,12 +174,20 @@ const ChatRoom = () => {
     };
   }, [token, roomId]);
 
-  const sendMessage: MouseEventHandler<HTMLButtonElement> = (e) => {
+  const sendMessage: FormEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault();
-    if (input && ws.current && ws.current.readyState == WebSocket.OPEN) {
-      sendMessageWS(ws.current, input);
-      setInput("");
+    if (!input || !ws.current || ws.current.readyState !== WebSocket.OPEN) {
+      // An empty box is a no-op in both modes: editing never deletes.
+      return;
     }
+
+    if (editingId !== null) {
+      sendModifyRequest(editingId, input, ws.current);
+      setEditingId(null);
+    } else {
+      sendMessageWS(ws.current, input);
+    }
+    setInput("");
   };
 
   const handleCreateRoom = async (name: string) => {
@@ -179,24 +218,43 @@ const ChatRoom = () => {
           {messages.map((message: Message, id: number) => (
             <MessageCard
               message={message}
-              key={id}
+              key={message.id ?? id}
               currentUser={username}
               onDeleteMessage={(id) => sendDeleteRequest(id, ws.current)}
+              onEditMessage={startEdit}
             />
           ))}
         </div>
-        <form className="message-form">
+        <form className="message-form" onSubmit={sendMessage}>
+          {editingId !== null && (
+            <div className="edit-banner">
+              Editing message
+              <button
+                className="edit-banner-cancel"
+                type="button"
+                onClick={cancelEdit}
+              >
+                &#10005; cancel
+              </button>
+            </div>
+          )}
           <div className="message-input-form">
             <input
               className="message-input"
               type="text"
+              ref={inputRef}
               onChange={handleType}
+              onKeyDown={handleInputKeyDown}
               value={input}
-              placeholder={`Message #${currentRoom.name}`}
+              placeholder={
+                editingId !== null
+                  ? "Edit your message"
+                  : `Message #${currentRoom.name}`
+              }
               autoFocus={true}
             ></input>
-            <button className="send-button" type="submit" onClick={sendMessage}>
-              Send
+            <button className="send-button" type="submit">
+              {editingId !== null ? "Save" : "Send"}
             </button>
           </div>
         </form>

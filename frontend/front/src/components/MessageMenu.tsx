@@ -6,6 +6,7 @@ type MessageMenuProps = {
   menuPosition: { x: number; y: number };
   handleCopyMessage: () => void;
   handleDeleteMessage: () => void;
+  handleEditMessage: () => void;
   currentUser: string;
   message: Message;
 };
@@ -15,6 +16,7 @@ const MessageMenu = ({
   menuPosition,
   handleCopyMessage,
   handleDeleteMessage,
+  handleEditMessage,
   currentUser,
   message,
 }: MessageMenuProps) => {
@@ -33,9 +35,14 @@ const MessageMenu = ({
         Copy Message
       </div>
       {currentUser === message.sender && (
-        <div className="menu-item delete" onClick={handleDeleteMessage}>
-          Delete Message
-        </div>
+        <>
+          <div className="menu-item" onClick={handleEditMessage}>
+            Edit Message
+          </div>
+          <div className="menu-item delete" onClick={handleDeleteMessage}>
+            Delete Message
+          </div>
+        </>
       )}
     </div>
   );

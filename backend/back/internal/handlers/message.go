@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"sync"
 	"time"
+	"unicode/utf8"
 
 	"back/internal/models/messages"
 	messagerepository "back/internal/repositories/message_repository"
@@ -45,6 +46,7 @@ type CommandType string
 const (
 	SEND   CommandType = "SEND"
 	REMOVE CommandType = "REMOVE"
+	MODIFY CommandType = "MODIFY"
 )
 
 type Command struct {
@@ -70,6 +72,23 @@ type RemoveRequest struct {
 
 func (r RemoveRequest) GetType() CommandType {
 	return REMOVE
+}
+
+// ModifyPayload is the data of a MODIFY command: which message, and its new
+// content. SEND and REMOVE carry a scalar `data`, but an edit needs both
+// values, so they are nested inside `data` rather than added alongside
+// `command_type` — that keeps the envelope the two-pass decode relies on.
+type ModifyPayload struct {
+	Id      int    `json:"id"`
+	Content string `json:"content"`
+}
+
+type ModifyRequest struct {
+	Data ModifyPayload `json:"data"`
+}
+
+func (m ModifyRequest) GetType() CommandType {
+	return MODIFY
 }
 
 type BroadcastData interface {
@@ -159,6 +178,58 @@ func (r RemoveRequest) Execute(ctx context.Context, repo messagerepository.Messa
 	return nil
 }
 
+func (m ModifyRequest) Execute(ctx context.Context, repo messagerepository.MessageRepository, userID int, roomID int) error {
+	log.Println("Executing request: ", m)
+
+	// An empty edit is a no-op, not a delete.
+	if m.Data.Content == "" {
+		return nil
+	}
+
+	if utf8.RuneCountInString(m.Data.Content) > message.MAX_CONTENT_LENGTH {
+		return errors.New("message content is too long")
+	}
+
+	existing, err := repo.GetByID(ctx, m.Data.Id)
+	if err != nil {
+		return err
+	}
+
+	// Proprietary check, mirroring RemoveRequest: silently ignore edits that
+	// aren't the author's, target another room, or hit a deleted message.
+	if existing.SenderID != userID || existing.RoomID != roomID || existing.Deleted {
+		return nil
+	}
+
+	if err := repo.UpdateContent(ctx, m.Data.Id, m.Data.Content); err != nil {
+		return err
+	}
+
+	existing.Content = m.Data.Content
+	existing.Edited = true
+
+	response, err := existing.ToSendFormat()
+	if err != nil {
+		log.Println("ERROR converting to send format: ", err)
+		return err
+	}
+
+	b := Broadcast[message.MessageResponse]{
+		MODIFY,
+		*response,
+	}
+
+	output, jsonErr := json.Marshal(b)
+	if jsonErr != nil {
+		log.Println("ERROR converting message to json: ", jsonErr)
+		return jsonErr
+	}
+
+	broadcast <- roomBroadcast{roomID, output}
+
+	return nil
+}
+
 func parseReq(s string) (Request, error) {
 
 	log.Println("PARSING request: ", s)
@@ -180,6 +251,13 @@ func parseReq(s string) (Request, error) {
 		return req, nil
 	case string(REMOVE):
 		req := &RemoveRequest{}
+		err := json.Unmarshal([]byte(s), req)
+		if err != nil {
+			return nil, err
+		}
+		return req, nil
+	case string(MODIFY):
+		req := &ModifyRequest{}
 		err := json.Unmarshal([]byte(s), req)
 		if err != nil {
 			return nil, err

@@ -78,6 +78,13 @@ input {
   font-weight: 400;
 }
 
+.message-edited {
+  font-size: 12px;
+  color: #72767d;
+  font-style: italic;
+  margin-left: 6px;
+}
+
 .message-three-dots {
   opacity: 0;
   cursor: pointer;
@@ -128,6 +135,28 @@ input {
 .message-form {
   width: 100%;
   padding: 8px 0 16px;
+}
+
+/* Shown above the type-bar only while editing an existing message */
+.edit-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 25px 8px;
+  font-size: 13px;
+  color: #b5bac1;
+}
+
+.edit-banner-cancel {
+  padding: 2px 8px;
+  min-height: 0;
+  font-size: 13px;
+  background-color: transparent;
+  color: #00a8fc;
+}
+
+.edit-banner-cancel:hover {
+  background-color: rgba(255, 255, 255, 0.08);
 }
 
 /* Chat layout: room sidebar + selected room */
