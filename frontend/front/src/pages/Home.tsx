@@ -4,11 +4,11 @@ import { clearToken, logout, type RootState } from "../store/store";
 import { parseISO } from "date-fns";
 import RedirectionButton from "../components/RedirectionButton";
 import UserAvatar from "../components/UserAvatar";
-import { useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 const Home = () => {
   const user = useSelector((state: RootState) => state.user.user);
-  const navigate = useNavigate();
+  const token = useSelector((state: RootState) => state.token.token);
   const dispatch = useDispatch();
   const [creationDate, setCreationDate] = useState<string>();
 
@@ -29,9 +29,17 @@ const Home = () => {
     }
   }, [user]);
 
+  // `token` is read straight from localStorage when the store is created, so it
+  // is available on the very first render and is the reliable "logged in"
+  // signal. `user` only arrives once App.tsx's /api/profile fetch resolves, so
+  // gating on it here bounced logged-in users to /login on every page load.
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Logged in, but the profile request hasn't come back yet.
   if (!user) {
-    navigate("/login", {replace: true});
-    return
+    return <div className="center-wrapper">Loading…</div>;
   }
 
   return (
