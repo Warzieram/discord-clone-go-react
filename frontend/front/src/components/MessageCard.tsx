@@ -6,12 +6,14 @@ import type { Message } from "../types";
 type MessageCardProps = {
   message: Message;
   onDeleteMessage?: (messageId: number) => void;
+  onEditMessage?: (message: Message) => void;
   currentUser?: string;
 };
 
 const MessageCard = ({
   message,
   onDeleteMessage,
+  onEditMessage,
   currentUser,
 }: MessageCardProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -49,6 +51,13 @@ const MessageCard = ({
     setIsMenuOpen(false);
   };
 
+  const handleEditMessage = () => {
+    if (onEditMessage && message.id) {
+      onEditMessage(message);
+    }
+    setIsMenuOpen(false);
+  };
+
   const handleCopyMessage = () => {
     navigator.clipboard.writeText(message.content);
     setIsMenuOpen(false);
@@ -76,6 +85,7 @@ const MessageCard = ({
         <div className="message-header-inline">
           <span className="message-username">{message.sender}</span>
           <span className="message-timestamp">{formattedDate}</span>
+          {message.edited && <span className="message-edited">(edited)</span>}
           <span className="message-three-dots" onClick={handleDotsClick}>
             ⋯
           </span>
@@ -87,6 +97,7 @@ const MessageCard = ({
         <MessageMenu
           message={message}
           handleDeleteMessage={handleDeleteMessage}
+          handleEditMessage={handleEditMessage}
           menuPosition={menuPosition}
           handleCopyMessage={handleCopyMessage}
           menuRef={menuRef}

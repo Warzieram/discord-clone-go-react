@@ -27,11 +27,12 @@ func (r *PostgresMessageRepository) Save(ctx context.Context, m *message.Message
 }
 
 func (r *PostgresMessageRepository) GetByID(ctx context.Context, id int) (*message.Message, error) {
-	const query = `SELECT id, content, created_at, sender_id, COALESCE(room_id, 0) FROM messages WHERE id = $1`
+	const query = `SELECT id, content, created_at, sender_id, COALESCE(room_id, 0), edited, COALESCE(deleted, false)
+	FROM messages WHERE id = $1`
 
 	m := &message.Message{}
 	err := r.db.QueryRowContext(ctx, query, id).Scan(
-		&m.Id, &m.Content, &m.CreatedAt, &m.SenderID, &m.RoomID,
+		&m.Id, &m.Content, &m.CreatedAt, &m.SenderID, &m.RoomID, &m.Edited, &m.Deleted,
 	)
 	if err != nil {
 		return nil, err
@@ -40,7 +41,7 @@ func (r *PostgresMessageRepository) GetByID(ctx context.Context, id int) (*messa
 }
 
 func (r *PostgresMessageRepository) GetLast(ctx context.Context, roomID int, limit int, offset int) ([]message.Message, error) {
-	const query = `SELECT id, content, created_at, sender_id, room_id
+	const query = `SELECT id, content, created_at, sender_id, room_id, edited
 	FROM messages
 	WHERE deleted = false AND room_id = $1
 	ORDER BY created_at DESC
@@ -55,7 +56,7 @@ func (r *PostgresMessageRepository) GetLast(ctx context.Context, roomID int, lim
 	var messages []message.Message
 	for rows.Next() {
 		var m message.Message
-		if err := rows.Scan(&m.Id, &m.Content, &m.CreatedAt, &m.SenderID, &m.RoomID); err != nil {
+		if err := rows.Scan(&m.Id, &m.Content, &m.CreatedAt, &m.SenderID, &m.RoomID, &m.Edited); err != nil {
 			return messages, err
 		}
 		messages = append(messages, m)
@@ -70,5 +71,12 @@ func (r *PostgresMessageRepository) MarkAsDeleted(ctx context.Context, id int) e
 	const query = `UPDATE messages SET deleted = true WHERE id = $1`
 
 	_, err := r.db.ExecContext(ctx, query, id)
+	return err
+}
+
+func (r *PostgresMessageRepository) UpdateContent(ctx context.Context, id int, content string) error {
+	const query = `UPDATE messages SET content = $2, edited = true WHERE id = $1`
+
+	_, err := r.db.ExecContext(ctx, query, id, content)
 	return err
 }

@@ -42,10 +42,20 @@ const sendDeleteRequest = (id: number, ws: WebSocket | null) => {
   ws.send(JSON.stringify(request));
 };
 
+const sendModifyRequest = (id: number, content: string, ws: WebSocket | null) => {
+  if (!ws) return;
+  const request = {
+    command_type: "MODIFY",
+    data: { id, content },
+  };
+  ws.send(JSON.stringify(request));
+};
+
 export {
   getLastMessages,
   createMessageWebSocket,
   sendMessageWS,
   sendDeleteRequest,
+  sendModifyRequest,
 };
 
