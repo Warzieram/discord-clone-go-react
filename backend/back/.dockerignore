@@ -1,3 +1,14 @@
 .git
 .gitignore
 README.md
+
+# Never bake local secrets into a published image
+.env
+.env.*
+!.env.example
+
+# Build output and local tooling
+main
+docker-compose.yml
+Dockerfile
+.dockerignore
